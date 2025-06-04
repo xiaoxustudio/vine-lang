@@ -1,0 +1,33 @@
+{
+	"compileOnSave": true,
+
+	"compilerOptions": {
+		"target": "esnext",
+
+		"module": "esnext",
+
+		"moduleResolution": "node",
+
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"emitDecoratorMetadata": true,
+
+		"inlineSourceMap": true,
+
+		"noImplicitThis": true,
+
+		"noUnusedLocals": true,
+
+		"stripInternal": true,
+
+		"pretty": true,
+
+		"declaration": true,
+
+		"baseUrl": "./",
+
+		"paths": { "@/*": ["./src/*"] }
+	},
+	"include": ["./src/**/*"],
+	"exclude": ["node_modules", "output"]
+}

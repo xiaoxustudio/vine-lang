@@ -1,0 +1,22 @@
+{
+	"name": "vine-lang",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node output/index.js",
+		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.11.0",
+	"devDependencies": {
+		"@rollup/plugin-alias": "^5.1.1",
+		"@rollup/plugin-node-resolve": "^16.0.1",
+		"@types/node": "^22.15.29",
+		"rollup": "^4.41.1",
+		"rollup-plugin-typescript2": "^0.36.0",
+		"typescript": "^5.8.3"
+	}
+}
