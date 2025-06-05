@@ -5,8 +5,8 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node output/index.js",
-		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs",
-		"compile": "pnpm dev compile",
+		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && pkg ./output/index.js --target=node18 --platform=windows --output=./output/vine",
+		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl"
 	},
 	"keywords": [],

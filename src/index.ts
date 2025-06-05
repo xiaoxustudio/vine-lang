@@ -8,7 +8,7 @@ if (args.length > 2) {
 	if (type === "repl") {
 		replProgram();
 	}
-	if (type === "compile") {
+	if (type === "ipt") {
 		const path = args[3];
 		runFile(path);
 	}

@@ -16,6 +16,24 @@ pnpm install
 pnpm run dev
 ```
 
+## repl
+
+Vine 提供了 repl 功能，可以在命令行中直接运行代码
+
+```bash
+pnpm run repl
+
+Vine > print("Hello, World!")
+```
+
+## interpret
+
+同样也可以运行后缀名为`.vine`的代码文件
+
+```bash
+pnpm ipt <path>
+```
+
 # 关于
 
 作者：[徐然](https://github.com/xiaoxustudio)

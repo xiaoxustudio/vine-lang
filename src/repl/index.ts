@@ -8,7 +8,7 @@ import { isNil, isNilLiteral, toRealValue } from "@/utils";
 
 export function replProgram() {
 	const env = new Environment();
-
+	console.log("\x1B[32m", "Welcome to Vine REPL!", "\x1b[0m");
 	const replServer = repl.start({
 		prompt: "Vine> ",
 		eval: (cmd, context, filename, callback) => {
