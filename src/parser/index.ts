@@ -217,6 +217,8 @@ export class Parser {
 			case TokenType.identifier:
 			case TokenType.string:
 			case TokenType.boolean:
+			case TokenType.nan:
+			case TokenType.nil:
 				this.eat();
 				return {
 					value: token,

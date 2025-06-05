@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node output/index.js",
 		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs",
-		"compile": "pnpm dev compile"
+		"compile": "pnpm dev compile",
+		"repl": "pnpm dev repl"
 	},
 	"keywords": [],
 	"author": "",

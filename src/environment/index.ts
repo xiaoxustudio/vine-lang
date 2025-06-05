@@ -1,6 +1,6 @@
 import { Expr, Literal } from "@/node";
 import { JSRuntimeFn, Token } from "@/types";
-import { LiteralFn, toRealValue } from "@/utils";
+import { isNil, isNilLiteral, LiteralFn, toRealValue } from "@/utils";
 
 export class Environment {
 	private Variable: Map<string, Expr | JSRuntimeFn>;
@@ -18,7 +18,14 @@ export class Environment {
 		this.declareVariable(
 			LiteralFn("print"),
 			(args: Token[]) => {
-				console.log(...args.map(e => toRealValue(e as unknown as Literal)));
+				console.log(
+					...args.map(e => {
+						const output = toRealValue(e as unknown as Literal);
+						return isNilLiteral(e as unknown as Literal) && isNil(output)
+							? "\x1b[36mnil\x1b[0m"
+							: output;
+					})
+				);
 			},
 			true
 		);

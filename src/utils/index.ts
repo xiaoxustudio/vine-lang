@@ -14,7 +14,7 @@ export function LiteralFn(s: string | number | boolean) {
 	} as Literal;
 }
 
-export function toRealValue(expr: Literal) {
+export function toRealValue(expr: Literal, isRepl = false) {
 	const token = expr?.type === "Literal" ? expr.value : expr;
 	switch (token?.type) {
 		case TokenType.number:
@@ -23,7 +23,19 @@ export function toRealValue(expr: Literal) {
 			return `${token.value}`;
 		case TokenType.boolean:
 			return !!token.value;
+		case TokenType.nan:
+			return Number.NaN;
+		case TokenType.nil:
+			return null;
 		default:
 			return expr?.value ? token : expr;
 	}
+}
+
+export function isNilLiteral(expr: Literal) {
+	const token = expr?.type === "Literal" ? expr.value : expr;
+	return token?.type === TokenType.nil;
+}
+export function isNil(input: any) {
+	return input === null || typeof input === "undefined" || input === "nil";
 }

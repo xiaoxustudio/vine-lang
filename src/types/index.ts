@@ -15,6 +15,7 @@ export enum TokenType {
 	fn,
 	end,
 	nan,
+	nil,
 }
 
 export type JSRuntimeFn = (args?: any) => void;
@@ -28,6 +29,7 @@ export interface Token {
 
 export const Keywords = {
 	NaN: TokenType.nan,
+	nil: TokenType.nil,
 	true: TokenType.boolean,
 	false: TokenType.boolean,
 	if: TokenType.if,

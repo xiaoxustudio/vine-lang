@@ -4,10 +4,11 @@ import { tokenlize } from "@/token";
 import { Parser } from "@/parser";
 import { Environment } from "@/environment";
 import { Interpreter } from "@/interpreter";
-import { toRealValue } from "@/utils";
+import { isNil, isNilLiteral, toRealValue } from "@/utils";
 
 export function replProgram() {
 	const env = new Environment();
+
 	const replServer = repl.start({
 		prompt: "Vine> ",
 		eval: (cmd, context, filename, callback) => {
@@ -17,10 +18,16 @@ export function replProgram() {
 				const ipt = new Interpreter(env);
 				const ast = parse.parse();
 				let res = ipt.interpret(ast) as any;
-				callback(null, toRealValue(res));
+				callback(null, res);
 			} catch (err) {
 				callback(err, null);
 			}
+		},
+		writer: (res: any) => {
+			const output = toRealValue(res);
+			return isNilLiteral(res) && isNil(output)
+				? "\x1b[36mnil\x1b[0m"
+				: (output as string);
 		},
 	});
 

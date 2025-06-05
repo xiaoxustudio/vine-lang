@@ -3,3 +3,4 @@ fn a(test):
 end
 
 a(123123)
+a(nil)
