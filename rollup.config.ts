@@ -23,7 +23,7 @@ export default defineConfig({
 		alias({
 			entries: [
 				{
-					find: "src",
+					find: "@/",
 					replacement: path.resolve(projectRootDir, "src"),
 				},
 			],

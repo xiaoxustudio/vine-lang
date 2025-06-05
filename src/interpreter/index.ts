@@ -159,8 +159,12 @@ export class Interpreter {
 	}
 	interpretFunctionDeclaration(stmt: FunctionDecl, env: Environment) {
 		const body = stmt.body;
+		const args_out = stmt.arguments;
 		env.declareVariable(stmt.id, (args: Expr[]) => {
 			const context = new Environment(env);
+			for (const i in args) {
+				context.declareVariable(args_out[i] as any, args[i]);
+			}
 			this.interpretBlockStatement(body, context);
 		});
 	}

@@ -1,0 +1,5 @@
+fn a(test):
+    print(test)
+end
+
+a(123123)

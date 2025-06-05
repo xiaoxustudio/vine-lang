@@ -1,4 +1,4 @@
-fn a(test):
+fn a():
     let x = 5
     x = 0
     let b = (x + 1 + 3) *3

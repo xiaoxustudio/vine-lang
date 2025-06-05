@@ -1,3 +1,15 @@
+import runFile from "./runtime";
 import { replProgram } from "./repl";
 
-replProgram();
+const args = process.argv;
+
+if (args.length > 2) {
+	const type = args[2];
+	if (type === "repl") {
+		replProgram();
+	}
+	if (type === "compile") {
+		const path = args[3];
+		runFile(path);
+	}
+}
