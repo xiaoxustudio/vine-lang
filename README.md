@@ -1,6 +1,10 @@
-# Vine Lang
+<p align="center">
+<img alt="logo" src="./Vine.png" width="120" style="margin-bottom: 10px;">
+</p>
 
-Vine 是一种旨在便于使用和学习的解释型编程语言。它是一种简单的语言，基于 TypeScript 构建，但具有更现代的语法和功能
+<h2 align="center">Vine Language</h2>
+
+`Vine` (藤蔓) 是一种旨在便于使用和学习的解释型编程语言。它是一种简单的语言，基于 TypeScript 构建，但具有更现代的语法和功能。
 
 # 构建
 
