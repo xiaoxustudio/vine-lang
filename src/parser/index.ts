@@ -3,6 +3,8 @@ import {
 	BinaryExpr,
 	BlockStmt,
 	CallExpr,
+	CompareExpr,
+	EqualExpr,
 	Expr,
 	FunctionDecl,
 	IfStmt,
@@ -18,8 +20,8 @@ export class Parser {
 		this.tokens = tokens;
 	}
 
-	at() {
-		return this.tokens[0];
+	at(index = 0) {
+		return this.tokens[index];
 	}
 
 	eat() {
@@ -45,7 +47,7 @@ export class Parser {
 					return this.eat();
 				}
 				count++;
-				if (count > 10000) {
+				if (count > 1000000) {
 					throw new Error(`Infinite loop to Match ${tag}`);
 				}
 			}
@@ -122,12 +124,14 @@ export class Parser {
 	parseIf() {
 		this.match(TokenType.if); // eat the 'if' token
 		const condition = this.parseExpression();
-		const consequent = this.parseBlock();
+		const consequent = this.parseBlock(true);
 		const token = this.at();
 		let alternate = { body: [], type: "BlockStatement" } as BlockStmt;
 		if (token.type === TokenType.else) {
 			this.match(TokenType.else);
 			alternate = this.parseBlock();
+		} else {
+			this.match(TokenType.end);
 		}
 		return {
 			type: "IfStatement",
@@ -137,18 +141,76 @@ export class Parser {
 		} as IfStmt;
 	}
 
-	parseBlock() {
+	parseBlock(noEnd: boolean = false) {
 		this.match(TokenType.operator, ":"); // eat the ':' token
 		const body = [];
-		while (this.tokens.length > 0 && this.at().type !== TokenType.end) {
+		while (
+			this.tokens.length > 0 &&
+			![TokenType.end, TokenType.else].includes(this.at().type)
+		) {
 			const stmt = this.parseStatement();
 			body.push(stmt);
 		}
-		this.match(TokenType.end); // eat the 'end' token
+		if (!noEnd) this.match(TokenType.end); // eat the 'end' token
 		return { body, type: "BlockStatement" } as BlockStmt;
 	}
 	parseExpression(): Expr {
-		return this.parseCall();
+		return this.parseEqualExpr();
+	}
+
+	parseComparisonExpr() {
+		const left = this.parseEqualExpr();
+		const token = this.at();
+		const op = ["<", ">"];
+		if (
+			token &&
+			token.type === TokenType.operator &&
+			op.includes(token.value)
+		) {
+			const operator = this.eat();
+			const target = {
+				left,
+				operator,
+				right: null,
+				type: "CompareExpression",
+			} as CompareExpr;
+			if (this.at().type === TokenType.operator && this.at().value === "=") {
+				this.eat();
+				target.operator = { ...operator, value: operator.value + "=" };
+			}
+			target.right = this.parseComparisonExpr();
+			return target;
+		}
+		return left;
+	}
+
+	parseEqualExpr() {
+		const left = this.parseCall();
+		const token = this.at();
+		const op = ["=", "!"];
+		if (
+			token &&
+			token.type === TokenType.operator &&
+			op.includes(token.value)
+		) {
+			const operator = this.eat();
+			if (this.at().type === TokenType.operator && this.at().value === "=") {
+				this.eat();
+				return {
+					left,
+					operator: { ...operator, value: operator.value + "=" },
+					right: this.parseEqualExpr(),
+					type: "EqualExpression",
+				} as EqualExpr;
+			}
+			return {
+				left,
+				operator,
+				right: this.parseEqualExpr(),
+				type: "AssignmentExpression",
+			} as AssignmentExpr;
+		}
+		return left;
 	}
 
 	parseArgs() {
@@ -178,7 +240,7 @@ export class Parser {
 		return left;
 	}
 	parseBinaryExpr() {
-		const left = this.parseAssignment();
+		const left = this.parsePrimary();
 		const token = this.at();
 		const op = ["+", "-", "*", "/"];
 		if (
@@ -197,19 +259,6 @@ export class Parser {
 		return left;
 	}
 
-	parseAssignment(): Expr {
-		const left = this.parsePrimary();
-		const token = this.at();
-		if (token && token.type === TokenType.operator && token.value === "=") {
-			return {
-				left,
-				operator: this.eat(),
-				right: this.parsePrimary(),
-				type: "AssignmentExpression",
-			} as AssignmentExpr;
-		}
-		return left as Expr;
-	}
 	parsePrimary(): Expr {
 		const token = this.at();
 		switch (token.type) {
@@ -227,7 +276,7 @@ export class Parser {
 			case TokenType.paren:
 				this.eat();
 				const expr = this.parseExpression();
-				this.eat(); // eat the closing paren
+				this.match(TokenType.paren, ")"); // eat the closing paren
 				return expr;
 			default:
 				throw new Error(`Unexpected token: ${JSON.stringify(token)}`);

@@ -1,5 +1,5 @@
 import { Literal } from "@/node";
-import { TokenType } from "@/types";
+import { Token, TokenType } from "@/types";
 
 export function LiteralFn(s: string | number | boolean) {
 	const type =
@@ -14,7 +14,7 @@ export function LiteralFn(s: string | number | boolean) {
 	} as Literal;
 }
 
-export function toRealValue(expr: Literal, isRepl = false) {
+export function toRealValue(expr: Literal | Token, isRepl = false) {
 	const token = expr?.type === "Literal" ? expr.value : expr;
 	switch (token?.type) {
 		case TokenType.number:

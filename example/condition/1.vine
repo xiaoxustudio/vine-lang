@@ -1,0 +1,10 @@
+let a = "xuran"
+
+if a == "徐然" :
+    print("a 是徐然")
+end
+
+
+if a == "xuran" :
+    print("a 是xuran")
+end

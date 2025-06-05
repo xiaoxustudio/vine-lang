@@ -11,8 +11,12 @@ import {
 	FunctionDecl,
 	BlockStmt,
 	AssignmentExpr,
+	IfStmt,
+	CompareExpr,
+	EqualExpr,
 } from "@/node";
 import { Token, TokenType } from "@/types";
+import { toRealValue } from "@/utils";
 
 export class TokenUnit {
 	_token: Token;
@@ -110,6 +114,33 @@ export class TokenUnit {
 		this._token = { ...this._token, value: (left / right).toString() };
 		return this;
 	}
+	logicOperate(operator: Token, rightToken: Literal) {
+		const left = toRealValue(this._token);
+		const right = toRealValue(rightToken);
+		const res = ((): boolean => {
+			switch (operator.value) {
+				case "==":
+					return left == right;
+				case "!=":
+					return left != right;
+				case ">":
+					return left > right;
+				case "<":
+					return left < right;
+				case ">=":
+					return left >= right;
+				case "<=":
+					return left >= right;
+			}
+		})();
+
+		this._token = {
+			...this._token,
+			type: TokenType.boolean,
+			value: res.toString(),
+		};
+		return this;
+	}
 	getToken() {
 		return this._token;
 	}
@@ -145,10 +176,25 @@ export class Interpreter {
 				return this.interpretBlockStatement(stmt as BlockStmt, env);
 			case "AssignmentExpression":
 				return this.interpretAssignmentExpression(stmt as AssignmentExpr, env);
+			case "IfStatement":
+				return this.interpretIfStatement(stmt as IfStmt, env);
 			default:
 				return this.interpretExpression(stmt as ExpressionStmt, env);
 		}
 	}
+
+	interpretIfStatement(stmt: IfStmt, env: Environment) {
+		const condition = this.interpretExpression(stmt.test, env) as Token;
+		if (condition.type === TokenType.boolean) {
+			if (condition.value === "true") {
+				return this.interpretStmt(stmt.consequent, env);
+			} else if (stmt.alternate) {
+				return this.interpretStmt(stmt.alternate, env);
+			}
+		}
+		throw new Error("Condition must be a boolean");
+	}
+
 	interpretAssignmentExpression(stmt: AssignmentExpr, env: Environment) {
 		env.setVariable(stmt.left, stmt.right);
 	}
@@ -198,17 +244,31 @@ export class Interpreter {
 				const left = this.interpretExpression(e.left, env);
 				const right = this.interpretExpression(e.right, env);
 
+				const tk_unit = new TokenUnit(left);
+
 				switch (e.operator.value) {
 					case "+":
-						return new TokenUnit(left).add(right).getToken();
+						return tk_unit.add(right).getToken();
 					case "-":
-						return new TokenUnit(left).sub(right).getToken();
+						return tk_unit.sub(right).getToken();
 					case "*":
-						return new TokenUnit(left).mul(right).getToken();
+						return tk_unit.mul(right).getToken();
 					case "/":
-						return new TokenUnit(left).div(right).getToken();
+						return tk_unit.div(right).getToken();
 				}
-				break;
+				return tk_unit.getToken();
+			}
+			case "CompareExpression": {
+				const e = expression as CompareExpr;
+				const left = this.interpretExpression(e.left, env);
+				const right = this.interpretExpression(e.right, env);
+				return new TokenUnit(left).logicOperate(e.operator, right).getToken();
+			}
+			case "EqualExpression": {
+				const e = expression as EqualExpr;
+				const left = this.interpretExpression(e.left, env);
+				const right = this.interpretExpression(e.right, env);
+				return new TokenUnit(left).logicOperate(e.operator, right).getToken();
 			}
 			default:
 				throw new Error(

@@ -11,6 +11,8 @@ export type NodeType =
 	| "VariableDeclaration"
 	| "ExpressionStatement"
 	| "AssignmentExpression"
+	| "CompareExpression"
+	| "EqualExpression"
 	| "IfStatement";
 
 export interface Node {
@@ -34,6 +36,20 @@ export interface FunctionDecl extends Node {
 	arguments: Expr[];
 	body: BlockStmt;
 	type: "FunctionDeclaration";
+}
+
+export interface EqualExpr extends Expr {
+	left: Expr;
+	right: Expr;
+	operator: Token;
+	type: "EqualExpression";
+}
+
+export interface CompareExpr extends Expr {
+	left: Expr;
+	right: Expr;
+	operator: Token;
+	type: "CompareExpression";
 }
 
 export interface CallExpr extends Expr {
