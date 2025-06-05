@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node output/index.js",
-		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && pkg ./output/index.js --target=node18 --platform=windows --output=./output/vine",
+		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node ./scripts/build.js",
 		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl"
 	},
@@ -17,6 +17,8 @@
 		"@rollup/plugin-alias": "^5.1.1",
 		"@rollup/plugin-node-resolve": "^16.0.1",
 		"@types/node": "^22.15.29",
+		"pkg": "^5.8.1",
+		"rcedit": "^4.0.1",
 		"rollup": "^4.41.1",
 		"rollup-plugin-typescript2": "^0.36.0",
 		"typescript": "^5.8.3"

@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="logo" src="./Vine.png" width="120" style="margin-bottom: 10px;">
+<img alt="logo" src="./resources/Vine.png" width="120" style="margin-bottom: 10px;">
 </p>
 
 <h2 align="center">Vine Language</h2>
