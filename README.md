@@ -6,7 +6,7 @@
 
 `Vine` (藤蔓) 是一种旨在便于使用和学习的解释型编程语言。它是一种简单的语言，基于 TypeScript 构建，但具有更现代的语法和功能。
 
-# 构建
+# 开发
 
 项目使用 pnpm 作为包管理器
 
@@ -16,8 +16,18 @@ pnpm install
 
 ## dev
 
+本地运行
+
 ```bash
 pnpm run dev
+```
+
+## build
+
+构建exe
+
+```bash
+pnpm run build
 ```
 
 ## repl
