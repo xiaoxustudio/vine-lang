@@ -1,3 +1,5 @@
 let a = 123
 let b = true 
 let c = false
+let d = nil
+let e = NaN

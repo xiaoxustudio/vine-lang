@@ -1,8 +1,8 @@
-import { Keywords, Token, TokenType } from "@/types";
+import { Keywords, Token, TokenType } from "@/keywords";
 
 export const isDigit = (ch: string) => /\d/.test(ch);
 export const isAlpha = (ch: string) => /[a-zA-Z_]/.test(ch);
-export const isOperator = (ch: string) => /[+\-*/%=<>!&|:]/.test(ch);
+export const isOperator = (ch: string) => /[+\-*/%=<>!&|:.]/.test(ch);
 export const isKeyword = (word: string) => Object.keys(Keywords).includes(word);
 export const isComment = (ch: string) => ch === "#";
 export const isSkip = (ch: string) => [" ", "\t", "\r"].includes(ch);

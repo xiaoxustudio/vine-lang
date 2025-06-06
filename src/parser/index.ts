@@ -6,13 +6,16 @@ import {
 	CompareExpr,
 	EqualExpr,
 	Expr,
+	ForStmt,
 	FunctionDecl,
 	IfStmt,
 	ProgramStmt,
+	RangeExpr,
 	VariableDecl,
 } from "@/node";
-import { Token, TokenType } from "@/types";
+import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
+import { LiteralFn } from "@/utils";
 
 export class Parser {
 	tokens: Token[];
@@ -79,6 +82,8 @@ export class Parser {
 				return this.parseIf();
 			case TokenType.fn:
 				return this.parseFunction();
+			case TokenType.for:
+				return this.parseFor();
 			default:
 				return this.parseExpression();
 		}
@@ -141,6 +146,21 @@ export class Parser {
 		} as IfStmt;
 	}
 
+	parseFor() {
+		this.match(TokenType.for); // eat the 'for' token
+		const identifier = this.parseIdentifier();
+		this.match(TokenType.in); // eat the 'for' token
+		const range = this.parseRangeExpr();
+		const body = this.parseBlock();
+		return {
+			init: identifier,
+			range,
+			body,
+			update: LiteralFn(1),
+			type: "ForStatement",
+		} as ForStmt;
+	}
+
 	parseBlock(noEnd: boolean = false) {
 		this.match(TokenType.operator, ":"); // eat the ':' token
 		const body = [];
@@ -155,7 +175,29 @@ export class Parser {
 		return { body, type: "BlockStatement" } as BlockStmt;
 	}
 	parseExpression(): Expr {
-		return this.parseEqualExpr();
+		return this.parseRangeExpr();
+	}
+	parseRangeExpr() {
+		const left = this.parseComparisonExpr();
+		const token = this.at();
+		if (
+			token &&
+			token.type === TokenType.operator &&
+			token.value === "." &&
+			this.at(1).type === TokenType.operator &&
+			this.at(1).value === "."
+		) {
+			const operator = this.eat();
+			operator.value = "..";
+			this.eat();
+			return {
+				start: left,
+				step: operator,
+				end: this.parseRangeExpr(),
+				type: "RangeExpression",
+			} as RangeExpr;
+		}
+		return left;
 	}
 
 	parseComparisonExpr() {
@@ -239,6 +281,7 @@ export class Parser {
 		}
 		return left;
 	}
+
 	parseBinaryExpr() {
 		const left = this.parsePrimary();
 		const token = this.at();

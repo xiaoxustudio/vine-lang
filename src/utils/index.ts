@@ -1,5 +1,5 @@
 import { Literal } from "@/node";
-import { Token, TokenType } from "@/types";
+import { Token, TokenType } from "@/keywords";
 
 export function LiteralFn(s: string | number | boolean) {
 	const type =

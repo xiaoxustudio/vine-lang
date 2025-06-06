@@ -1,4 +1,4 @@
-import { Token } from "@/types";
+import { Token } from "@/keywords";
 
 export type NodeType =
 	| "Program"
@@ -13,7 +13,9 @@ export type NodeType =
 	| "AssignmentExpression"
 	| "CompareExpression"
 	| "EqualExpression"
-	| "IfStatement";
+	| "RangeExpression"
+	| "IfStatement"
+	| "ForStatement";
 
 export interface Node {
 	type: NodeType;
@@ -36,6 +38,13 @@ export interface FunctionDecl extends Node {
 	arguments: Expr[];
 	body: BlockStmt;
 	type: "FunctionDeclaration";
+}
+
+export interface RangeExpr extends Expr {
+	start: Expr;
+	end: Expr;
+	step: Token;
+	type: "RangeExpression";
 }
 
 export interface EqualExpr extends Expr {
@@ -83,10 +92,19 @@ export interface IfStmt extends Node {
 	type: "IfStatement";
 }
 
+export interface ForStmt extends Node {
+	init: Expr;
+	range: RangeExpr;
+	update: Expr;
+	body: BlockStmt;
+	type: "ForStatement";
+}
+
 export interface ExpressionStmt extends Node {
 	expression: Expr;
 	type: "ExpressionStatement";
 }
+
 export interface AssignmentExpr extends Expr {
 	left: Literal;
 	right: Expr;

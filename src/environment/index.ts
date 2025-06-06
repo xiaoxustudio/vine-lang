@@ -1,5 +1,5 @@
 import { Expr, Literal } from "@/node";
-import { JSRuntimeFn, Token } from "@/types";
+import { JSRuntimeFn, Token } from "@/keywords";
 import { isNil, isNilLiteral, LiteralFn, toRealValue } from "@/utils";
 
 export class Environment {

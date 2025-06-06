@@ -16,6 +16,9 @@ export enum TokenType {
 	end,
 	nan,
 	nil,
+	for,
+	in,
+	range,
 }
 
 export type JSRuntimeFn = (args?: any) => void;
@@ -37,4 +40,7 @@ export const Keywords = {
 	let: TokenType.let,
 	fn: TokenType.fn,
 	end: TokenType.end,
+	for: TokenType.for,
+	in: TokenType.in,
+	range: TokenType.range,
 };
