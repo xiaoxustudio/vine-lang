@@ -28,7 +28,11 @@ export function toRealValue(expr: Literal | Token, isRepl = false) {
 		case TokenType.nil:
 			return null;
 		default:
-			return expr?.value ? token : expr;
+			return expr?.value
+				? token
+				: Array.isArray(expr)
+				? expr.map(v => toRealValue(v))
+				: expr;
 	}
 }
 

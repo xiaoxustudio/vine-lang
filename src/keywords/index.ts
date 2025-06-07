@@ -7,6 +7,7 @@ export enum TokenType {
 	keyword,
 	comment,
 	paren, // ()
+	bracket, // []
 	comma, // ,
 	// special tokens
 	if,

@@ -4,6 +4,8 @@ export type NodeType =
 	| "Program"
 	| "BinaryExpression"
 	| "Literal"
+	| "Property"
+	| "ArrayExpression"
 	| "MemberExpression"
 	| "CallExpression"
 	| "BlockStatement"
@@ -103,6 +105,23 @@ export interface ForStmt extends Node {
 export interface ExpressionStmt extends Node {
 	expression: Expr;
 	type: "ExpressionStatement";
+}
+
+export interface Property extends Node {
+	key: Literal;
+	value: Expr;
+	type: "Property";
+}
+
+export interface ArrayExpr extends Node {
+	items: Property[];
+	type: "ArrayExpression";
+}
+
+export interface MemberExpr extends Expr {
+	object: Expr;
+	property: Expr[];
+	type: "MemberExpression";
 }
 
 export interface AssignmentExpr extends Expr {

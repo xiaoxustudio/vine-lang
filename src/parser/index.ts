@@ -1,4 +1,5 @@
 import {
+	ArrayExpr,
 	AssignmentExpr,
 	BinaryExpr,
 	BlockStmt,
@@ -321,6 +322,22 @@ export class Parser {
 				const expr = this.parseExpression();
 				this.match(TokenType.paren, ")"); // eat the closing paren
 				return expr;
+			case TokenType.bracket: {
+				const elements: Expr[] = [];
+				this.match(TokenType.bracket, "[");
+				while (this.tokens.length > 0 && this.at().type !== TokenType.bracket) {
+					const expr = this.parseExpression();
+					if (this.at().type === TokenType.comma) {
+						this.eat();
+					}
+					elements.push(expr);
+				}
+				this.match(TokenType.bracket, "]");
+				return {
+					items: elements,
+					type: "ArrayExpression",
+				} as ArrayExpr;
+			}
 			default:
 				throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
 		}

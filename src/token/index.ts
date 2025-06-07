@@ -63,6 +63,10 @@ export function tokenlize(code: string): Token[] {
 				addToken(TokenType.comment, comment);
 			} else if (["(", ")"].includes(ch)) {
 				addToken(TokenType.paren, ch);
+			} else if (["[", "]"].includes(ch)) {
+				addToken(TokenType.bracket, ch);
+			} else if (ch === ",") {
+				addToken(TokenType.comma, ch);
 			} else if (ch === '"') {
 				let str = ch;
 				j++;

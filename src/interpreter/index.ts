@@ -16,6 +16,7 @@ import {
 	EqualExpr,
 	ForStmt,
 	RangeExpr,
+	ArrayExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, toRealValue } from "@/utils";
@@ -277,6 +278,10 @@ export class Interpreter {
 						return tk_unit.div(right).getToken();
 				}
 				return tk_unit.getToken();
+			}
+			case "ArrayExpression": {
+				const e = expression as ArrayExpr;
+				return e.items.map(element => this.interpretExpression(element, env));
 			}
 			case "CompareExpression": {
 				const e = expression as CompareExpr;
