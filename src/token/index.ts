@@ -2,7 +2,7 @@ import { Keywords, Token, TokenType } from "@/keywords";
 
 export const isDigit = (ch: string) => /\d/.test(ch);
 export const isAlpha = (ch: string) => /[a-zA-Z_]/.test(ch);
-export const isOperator = (ch: string) => /[+\-*/%=<>!&|:.]/.test(ch);
+export const isOperator = (ch: string) => /[+\-*/%=<>!&|.]/.test(ch);
 export const isKeyword = (word: string) => Object.keys(Keywords).includes(word);
 export const isComment = (ch: string) => ch === "#";
 export const isSkip = (ch: string) => [" ", "\t", "\r"].includes(ch);
@@ -65,8 +65,13 @@ export function tokenlize(code: string): Token[] {
 				addToken(TokenType.paren, ch);
 			} else if (["[", "]"].includes(ch)) {
 				addToken(TokenType.bracket, ch);
+			} else if (["{", "}"].includes(ch)) {
+				addToken(TokenType.curly, ch);
 			} else if (ch === ",") {
 				addToken(TokenType.comma, ch);
+			} else if (ch === '"') {
+			} else if (ch === ":") {
+				addToken(TokenType.colon, ch);
 			} else if (ch === '"') {
 				let str = ch;
 				j++;

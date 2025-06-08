@@ -6,6 +6,7 @@ export type NodeType =
 	| "Literal"
 	| "Property"
 	| "ArrayExpression"
+	| "ObjectExpression"
 	| "MemberExpression"
 	| "CallExpression"
 	| "BlockStatement"
@@ -111,6 +112,11 @@ export interface Property extends Node {
 	key: Literal;
 	value: Expr;
 	type: "Property";
+}
+
+export interface ObjectExpr extends Node {
+	properties: Property[];
+	type: "ObjectExpression";
 }
 
 export interface ArrayExpr extends Node {

@@ -1,4 +1,4 @@
-import { Literal } from "@/node";
+import { Expr, Literal } from "@/node";
 import { Token, TokenType } from "@/keywords";
 
 export function LiteralFn(s: string | number | boolean) {
@@ -32,14 +32,25 @@ export function toRealValue(expr: Literal | Token, isRepl = false) {
 				? token
 				: Array.isArray(expr)
 				? expr.map(v => toRealValue(v))
+				: typeof expr === "object"
+				? mapToObject(expr as any, toRealValue)
 				: expr;
 	}
+}
+
+export function mapToObject(obj: Map<Literal, Expr>, fn: (v: any) => any) {
+	const result = {};
+	for (const [key, value] of obj) {
+		result[toRealValue(key).value] = fn(value);
+	}
+	return result;
 }
 
 export function isNilLiteral(expr: Literal) {
 	const token = expr?.type === "Literal" ? expr.value : expr;
 	return token?.type === TokenType.nil;
 }
+
 export function isNil(input: any) {
 	return input === null || typeof input === "undefined" || input === "nil";
 }

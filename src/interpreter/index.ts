@@ -17,6 +17,7 @@ import {
 	ForStmt,
 	RangeExpr,
 	ArrayExpr,
+	ObjectExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, toRealValue } from "@/utils";
@@ -282,6 +283,14 @@ export class Interpreter {
 			case "ArrayExpression": {
 				const e = expression as ArrayExpr;
 				return e.items.map(element => this.interpretExpression(element, env));
+			}
+			case "ObjectExpression": {
+				const e = expression as ObjectExpr;
+				const obj = new Map<Literal, Expr>();
+				for (const target of e.properties) {
+					obj.set(target.key, this.interpretExpression(target.value, env));
+				}
+				return obj;
 			}
 			case "CompareExpression": {
 				const e = expression as CompareExpr;

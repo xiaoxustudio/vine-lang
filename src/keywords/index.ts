@@ -8,7 +8,9 @@ export enum TokenType {
 	comment,
 	paren, // ()
 	bracket, // []
+	curly, // {}
 	comma, // ,
+	colon, // :
 	// special tokens
 	if,
 	else,

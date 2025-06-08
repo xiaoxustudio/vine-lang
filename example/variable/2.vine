@@ -1,2 +1,10 @@
 let a = 123
 let b = a
+let c = {
+    xuran : 123,
+    nb : 456
+}
+let aa = c
+let d = [c,[aa]]
+
+print(d)

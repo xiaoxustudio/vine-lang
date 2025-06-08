@@ -10,7 +10,9 @@ import {
 	ForStmt,
 	FunctionDecl,
 	IfStmt,
+	ObjectExpr,
 	ProgramStmt,
+	Property,
 	RangeExpr,
 	VariableDecl,
 } from "@/node";
@@ -32,7 +34,7 @@ export class Parser {
 		return this.tokens.shift();
 	}
 
-	match(tag: string | TokenType, match_value?: string | undefined) {
+	match(tag: string | TokenType, match_value?: string) {
 		if (typeof tag === "string") {
 			while (this.tokens.length > 0) {
 				const token = this.at();
@@ -163,7 +165,7 @@ export class Parser {
 	}
 
 	parseBlock(noEnd: boolean = false) {
-		this.match(TokenType.operator, ":"); // eat the ':' token
+		this.match(TokenType.colon, ":"); // eat the ':' token
 		const body = [];
 		while (
 			this.tokens.length > 0 &&
@@ -325,18 +327,44 @@ export class Parser {
 			case TokenType.bracket: {
 				const elements: Expr[] = [];
 				this.match(TokenType.bracket, "[");
-				while (this.tokens.length > 0 && this.at().type !== TokenType.bracket) {
+				// 处理空数组情况
+				if (this.at().value === "]") {
+					this.eat();
+					return {
+						items: elements,
+						type: "ArrayExpression",
+					} as ArrayExpr;
+				}
+				while (this.tokens.length > 0 && this.at().value !== "]") {
 					const expr = this.parseExpression();
+					elements.push(expr);
 					if (this.at().type === TokenType.comma) {
 						this.eat();
 					}
-					elements.push(expr);
 				}
 				this.match(TokenType.bracket, "]");
 				return {
 					items: elements,
 					type: "ArrayExpression",
 				} as ArrayExpr;
+			}
+			case TokenType.curly: {
+				const properties: Property[] = [];
+				this.match(TokenType.curly, "{");
+				while (this.tokens.length > 0 && this.at().type !== TokenType.curly) {
+					const key = this.parseExpression();
+					this.match(TokenType.colon, ":");
+					const value = this.parseExpression();
+					properties.push({ key, value } as Property);
+					if (this.at().type === TokenType.comma) {
+						this.eat();
+					}
+				}
+				this.match(TokenType.curly, "}");
+				return {
+					properties,
+					type: "ObjectExpression",
+				} as ObjectExpr;
 			}
 			default:
 				throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
