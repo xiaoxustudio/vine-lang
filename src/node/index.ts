@@ -110,6 +110,7 @@ export interface IfStmt extends Node {
 
 export interface ForStmt extends Node {
 	init: Expr;
+	value?: Expr;
 	range: RangeExpr;
 	update: Expr;
 	body: BlockStmt;

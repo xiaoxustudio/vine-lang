@@ -1,0 +1,8 @@
+let a = {
+    test:"1xuran",
+    test2:"2xuran",
+    test3:100
+}
+for i,v in a :
+    print("xuran",i,v)
+end

@@ -22,7 +22,7 @@ import {
 	IterableExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
-import { LiteralFn, toRealValue } from "@/utils";
+import { LiteralFn, mapToObject, toRealValue } from "@/utils";
 
 export class TokenUnit {
 	_token: Token;
@@ -193,6 +193,7 @@ export class Interpreter {
 
 	interpretForStatement(stmt: ForStmt, env: Environment) {
 		const id = stmt.init;
+		const value = stmt.value;
 		const range = this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
 		if (range.type === "range") {
@@ -207,10 +208,14 @@ export class Interpreter {
 				this.interpretBlockStatement(body, context);
 			}
 		} else if (range.type === "iterable") {
-			for (const key in range.object) {
-				const value = range.object[key];
+			const iterable = Array.isArray(range.object)
+				? range.object
+				: mapToObject(range.object, toRealValue);
+			for (const key in iterable) {
+				const val = iterable[key];
 				const context = new Environment(env);
-				context.declareVariable(id as Literal, value);
+				context.declareVariable(id as Literal, LiteralFn(key));
+				context.declareVariable(value as Literal, val);
 				this.interpretBlockStatement(body, context);
 			}
 		}

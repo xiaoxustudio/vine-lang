@@ -73,18 +73,15 @@ export function tokenlize(code: string): Token[] {
 			} else if (ch === ":") {
 				addToken(TokenType.colon, ch);
 			} else if (isString(ch)) {
-				let str = ch;
+				let str = "";
 				j++;
-				while (j < line.length && line[j] !== '"') {
+				while (j < line.length && !isString(line[j])) {
 					str += line[j];
 					j++;
 				}
-				if (j < line.length) {
-					str += line[j];
-				}
 				addToken(TokenType.string, str);
-			} else if (ch !== " " && !isSkip(ch)) {
-				addToken(TokenType.string, ch);
+			} else if (!isSkip(ch)) {
+				throw `Unknown char : ${ch}`;
 			}
 			colNum++;
 		}

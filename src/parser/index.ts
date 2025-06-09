@@ -156,11 +156,18 @@ export class Parser {
 	parseFor() {
 		this.match(TokenType.for); // eat the 'for' token
 		const identifier = this.parseIdentifier();
+		const token = this.at();
+		let value;
+		if (token.type === TokenType.comma) {
+			this.match(TokenType.comma);
+			value = this.parseIdentifier();
+		}
 		this.match(TokenType.in); // eat the 'for' token
 		const range = this.parseRangeExpr();
 		const body = this.parseBlock();
 		return {
 			init: identifier,
+			value,
 			range,
 			body,
 			update: LiteralFn(1),
