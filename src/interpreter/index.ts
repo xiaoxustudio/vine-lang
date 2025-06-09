@@ -18,6 +18,7 @@ import {
 	RangeExpr,
 	ArrayExpr,
 	ObjectExpr,
+	LambdaFunctionDecl,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, toRealValue } from "@/utils";
@@ -309,6 +310,16 @@ export class Interpreter {
 				const start = this.interpretExpression(e.start, env);
 				const end = this.interpretExpression(e.end, env);
 				return [start, end, e.step];
+			}
+			case "LambdaFunctionDecl": {
+				const e = expression as LambdaFunctionDecl;
+				return (args: Expr[]) => {
+					const context = new Environment(env);
+					for (const i in args) {
+						context.declareVariable(e.arguments[i] as any, args[i]);
+					}
+					return this.interpretBlockStatement(e.body, context);
+				};
 			}
 			default:
 				throw new Error(

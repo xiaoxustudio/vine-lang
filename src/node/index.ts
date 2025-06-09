@@ -11,6 +11,7 @@ export type NodeType =
 	| "CallExpression"
 	| "BlockStatement"
 	| "FunctionDeclaration"
+	| "LambdaFunctionDecl"
 	| "VariableDeclaration"
 	| "ExpressionStatement"
 	| "AssignmentExpression"
@@ -41,6 +42,12 @@ export interface FunctionDecl extends Node {
 	arguments: Expr[];
 	body: BlockStmt;
 	type: "FunctionDeclaration";
+}
+
+export interface LambdaFunctionDecl extends Node {
+	arguments: Expr[];
+	body: BlockStmt;
+	type: "LambdaFunctionDecl";
 }
 
 export interface RangeExpr extends Expr {

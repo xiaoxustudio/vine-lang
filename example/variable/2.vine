@@ -6,5 +6,8 @@ let c = {
 }
 let aa = c
 let d = [c,[aa]]
-
+let e = fn:
+    print(b)
+end
 print(d)
+e()

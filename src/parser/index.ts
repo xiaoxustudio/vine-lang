@@ -10,6 +10,7 @@ import {
 	ForStmt,
 	FunctionDecl,
 	IfStmt,
+	LambdaFunctionDecl,
 	ObjectExpr,
 	ProgramStmt,
 	Property,
@@ -54,7 +55,9 @@ export class Parser {
 				}
 				count++;
 				if (count > 1000000) {
-					throw new Error(`Infinite loop to Match ${tag}`);
+					throw new Error(
+						`Infinite loop to Match ${tag}，${JSON.stringify(token)}`
+					);
 				}
 			}
 		}
@@ -259,8 +262,15 @@ export class Parser {
 	}
 
 	parseArgs() {
+		if (this.at().type === TokenType.colon) {
+			return [];
+		}
 		const args: Expr[] = [];
 		this.match(TokenType.paren, "(");
+		if (this.at().value === ")") {
+			this.eat();
+			return args;
+		}
 		while (this.tokens.length > 0 && this.at().type !== TokenType.paren) {
 			const expr = this.parseExpression();
 			args.push(expr);
@@ -366,6 +376,16 @@ export class Parser {
 					type: "ObjectExpression",
 				} as ObjectExpr;
 			}
+			case TokenType.fn:
+				// lamdada function
+				this.match(TokenType.fn);
+				const args = this.parseArgs();
+				const body = this.parseBlock();
+				return {
+					arguments: args,
+					body,
+					type: "LambdaFunctionDecl",
+				} as LambdaFunctionDecl;
 			default:
 				throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
 		}
