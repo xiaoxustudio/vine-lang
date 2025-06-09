@@ -19,6 +19,7 @@ import {
 	ArrayExpr,
 	ObjectExpr,
 	LambdaFunctionDecl,
+	IterableExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, toRealValue } from "@/utils";
@@ -192,17 +193,26 @@ export class Interpreter {
 
 	interpretForStatement(stmt: ForStmt, env: Environment) {
 		const id = stmt.init;
-		const range = this.interpretExpression(stmt.range, env) as Token[];
+		const range = this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
-		const step = range[2].value === ".." ? 1 : Number(range[2].value);
-		for (
-			let i = Number(range[0].value);
-			i <= Number(range[1].value);
-			i += step
-		) {
-			const context = new Environment(env);
-			context.declareVariable(id as Literal, LiteralFn(i));
-			this.interpretBlockStatement(body, context);
+		if (range.type === "range") {
+			const step = range[2].value === ".." ? 1 : Number(range[2].value);
+			for (
+				let i = Number(range[0].value);
+				i <= Number(range[1].value);
+				i += step
+			) {
+				const context = new Environment(env);
+				context.declareVariable(id as Literal, LiteralFn(i));
+				this.interpretBlockStatement(body, context);
+			}
+		} else if (range.type === "iterable") {
+			for (const key in range.object) {
+				const value = range.object[key];
+				const context = new Environment(env);
+				context.declareVariable(id as Literal, value);
+				this.interpretBlockStatement(body, context);
+			}
 		}
 	}
 
@@ -309,7 +319,7 @@ export class Interpreter {
 				const e = expression as RangeExpr;
 				const start = this.interpretExpression(e.start, env);
 				const end = this.interpretExpression(e.end, env);
-				return [start, end, e.step];
+				return { type: "range", start, end, step: e.step };
 			}
 			case "LambdaFunctionDecl": {
 				const e = expression as LambdaFunctionDecl;
@@ -319,6 +329,13 @@ export class Interpreter {
 						context.declareVariable(e.arguments[i] as any, args[i]);
 					}
 					return this.interpretBlockStatement(e.body, context);
+				};
+			}
+			case "IterableExpression": {
+				const e = expression as IterableExpr;
+				return {
+					type: "iterable",
+					object: this.interpretExpression(e.object, env),
 				};
 			}
 			default:

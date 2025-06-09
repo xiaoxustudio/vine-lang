@@ -10,6 +10,7 @@ import {
 	ForStmt,
 	FunctionDecl,
 	IfStmt,
+	IterableExpr,
 	LambdaFunctionDecl,
 	ObjectExpr,
 	ProgramStmt,
@@ -202,6 +203,8 @@ export class Parser {
 				end: this.parseRangeExpr(),
 				type: "RangeExpression",
 			} as RangeExpr;
+		} else if (["ArrayExpression", "ObjectExpression"].includes(left.type)) {
+			return { type: "IterableExpression", object: left } as IterableExpr;
 		}
 		return left;
 	}

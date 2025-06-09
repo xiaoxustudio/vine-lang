@@ -18,6 +18,7 @@ export type NodeType =
 	| "CompareExpression"
 	| "EqualExpression"
 	| "RangeExpression"
+	| "IterableExpression"
 	| "IfStatement"
 	| "ForStatement";
 
@@ -55,6 +56,11 @@ export interface RangeExpr extends Expr {
 	end: Expr;
 	step: Token;
 	type: "RangeExpression";
+}
+
+export interface IterableExpr extends Expr {
+	type: "IterableExpression";
+	object: Expr;
 }
 
 export interface EqualExpr extends Expr {

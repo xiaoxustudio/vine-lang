@@ -1,7 +1,10 @@
 import { Expr, Literal } from "@/node";
 import { Token, TokenType } from "@/keywords";
 
-export function LiteralFn(s: string | number | boolean) {
+export function LiteralFn(s: string | number | boolean | Literal) {
+	if (s && (s as any)?.type === "Literal") {
+		return s as Literal;
+	}
 	const type =
 		typeof s === "string"
 			? TokenType.string
