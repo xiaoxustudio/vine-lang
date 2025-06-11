@@ -20,6 +20,7 @@ import {
 	ObjectExpr,
 	LambdaFunctionDecl,
 	IterableExpr,
+	SwitchStmt,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
@@ -186,8 +187,21 @@ export class Interpreter {
 				return this.interpretIfStatement(stmt as IfStmt, env);
 			case "ForStatement":
 				return this.interpretForStatement(stmt as ForStmt, env);
+			case "SwitchStmtement":
+				return this.interpretSwitchStatement(stmt as SwitchStmt, env);
 			default:
 				return this.interpretExpression(stmt as ExpressionStmt, env);
+		}
+	}
+
+	interpretSwitchStatement(stmt: SwitchStmt, env: Environment) {
+		const test = this.interpretExpression(stmt.test, env);
+		for (const case_ of stmt.cases) {
+			const test_ = this.interpretExpression(case_.test, env);
+			if (test_.type === test.type && test_.value === test.value) {
+				this.interpretBlockStatement(case_.body, env);
+				return;
+			}
 		}
 	}
 

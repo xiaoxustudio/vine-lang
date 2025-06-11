@@ -3,6 +3,7 @@ let a = {
     test2:"2xuran",
     test3:100
 }
+
 for i,v in a :
     print("xuran",i,v)
 end

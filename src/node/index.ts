@@ -10,6 +10,7 @@ export type NodeType =
 	| "MemberExpression"
 	| "CallExpression"
 	| "BlockStatement"
+	| "CaseBlockStatement"
 	| "FunctionDeclaration"
 	| "LambdaFunctionDecl"
 	| "VariableDeclaration"
@@ -20,7 +21,8 @@ export type NodeType =
 	| "RangeExpression"
 	| "IterableExpression"
 	| "IfStatement"
-	| "ForStatement";
+	| "ForStatement"
+	| "SwitchStmtement";
 
 export interface Node {
 	type: NodeType;
@@ -36,6 +38,12 @@ export interface Literal extends Expr {
 export interface BlockStmt extends Node {
 	body: Expr[];
 	type: "BlockStatement";
+}
+
+export interface CaseBlockStmt extends Node {
+	body: BlockStmt;
+	test?: Expr;
+	type: "CaseBlockStatement";
 }
 
 export interface FunctionDecl extends Node {
@@ -115,6 +123,12 @@ export interface ForStmt extends Node {
 	update: Expr;
 	body: BlockStmt;
 	type: "ForStatement";
+}
+
+export interface SwitchStmt extends Node {
+	test: Expr;
+	cases: CaseBlockStmt[];
+	type: "SwitchStmtement";
 }
 
 export interface ExpressionStmt extends Node {

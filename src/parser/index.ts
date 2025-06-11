@@ -4,6 +4,7 @@ import {
 	BinaryExpr,
 	BlockStmt,
 	CallExpr,
+	CaseBlockStmt,
 	CompareExpr,
 	EqualExpr,
 	Expr,
@@ -16,6 +17,7 @@ import {
 	ProgramStmt,
 	Property,
 	RangeExpr,
+	SwitchStmt,
 	VariableDecl,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
@@ -91,9 +93,56 @@ export class Parser {
 				return this.parseFunction();
 			case TokenType.for:
 				return this.parseFor();
+			case TokenType.switch:
+				return this.parseSwitch();
 			default:
 				return this.parseExpression();
 		}
+	}
+
+	parseSwitch() {
+		this.match(TokenType.switch); // eat the 'switch' token
+		const test = this.parseExpression();
+		this.match(TokenType.colon);
+		const cases: CaseBlockStmt[] = [];
+		while (this.at().type !== TokenType.end) {
+			const caseesBlock = this.parseSwitchCase();
+			cases.push(caseesBlock);
+		}
+		this.match(TokenType.end);
+		return {
+			type: "SwitchStmtement",
+			test,
+			cases,
+		} as SwitchStmt;
+	}
+
+	parseSwitchCase() {
+		const token = this.eat();
+		if ([TokenType.case, TokenType.default].includes(token.type)) {
+			let test = null;
+			if (token.type !== TokenType.default) {
+				test = this.parseExpression();
+			}
+			this.match(TokenType.colon, ":"); // eat the ':' token
+			let bodyStmt;
+			const body = [];
+			while (
+				this.tokens.length > 0 &&
+				![TokenType.break, TokenType.case].includes(this.at().type)
+			) {
+				const stmt = this.parseStatement();
+				body.push(stmt);
+			}
+			bodyStmt = { body, type: "BlockStatement" } as BlockStmt;
+			this.match(TokenType.break);
+			return {
+				test,
+				body: bodyStmt,
+				type: "CaseBlockStatement",
+			} as CaseBlockStmt;
+		}
+		throw new Error(`Unexpected case token: ${token.type}`);
 	}
 
 	parseFunction() {
@@ -396,6 +445,9 @@ export class Parser {
 					body,
 					type: "LambdaFunctionDecl",
 				} as LambdaFunctionDecl;
+			case TokenType.default:
+			case TokenType.case:
+				return this.parseSwitchCase();
 			default:
 				throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
 		}
