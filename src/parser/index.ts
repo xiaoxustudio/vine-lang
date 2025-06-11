@@ -17,6 +17,7 @@ import {
 	ProgramStmt,
 	Property,
 	RangeExpr,
+	ReturnStmt,
 	SwitchStmt,
 	VariableDecl,
 } from "@/node";
@@ -95,9 +96,20 @@ export class Parser {
 				return this.parseFor();
 			case TokenType.switch:
 				return this.parseSwitch();
+			case TokenType.return:
+				return this.parseReturn();
 			default:
 				return this.parseExpression();
 		}
+	}
+
+	parseReturn() {
+		this.match(TokenType.return);
+		const value = this.parseExpression();
+		return {
+			type: "ReturnStatement",
+			value,
+		} as ReturnStmt;
 	}
 
 	parseSwitch() {

@@ -12,6 +12,7 @@ export type NodeType =
 	| "BlockStatement"
 	| "CaseBlockStatement"
 	| "FunctionDeclaration"
+	| "ReturnStatement"
 	| "LambdaFunctionDecl"
 	| "VariableDeclaration"
 	| "ExpressionStatement"
@@ -44,6 +45,11 @@ export interface CaseBlockStmt extends Node {
 	body: BlockStmt;
 	test?: Expr;
 	type: "CaseBlockStatement";
+}
+
+export interface ReturnStmt extends Node {
+	value: Expr;
+	type: "ReturnStatement";
 }
 
 export interface FunctionDecl extends Node {

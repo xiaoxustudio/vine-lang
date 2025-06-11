@@ -21,6 +21,7 @@ import {
 	LambdaFunctionDecl,
 	IterableExpr,
 	SwitchStmt,
+	ReturnStmt,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
@@ -189,9 +190,16 @@ export class Interpreter {
 				return this.interpretForStatement(stmt as ForStmt, env);
 			case "SwitchStmtement":
 				return this.interpretSwitchStatement(stmt as SwitchStmt, env);
+			case "ReturnStatement":
+				return this.interpretReturnStatement(stmt as ReturnStmt, env);
 			default:
 				return this.interpretExpression(stmt as ExpressionStmt, env);
 		}
+	}
+
+	interpretReturnStatement(stmt: ReturnStmt, env: Environment) {
+		const value = this.interpretExpression(stmt.value, env);
+		return value;
 	}
 
 	interpretSwitchStatement(stmt: SwitchStmt, env: Environment) {
@@ -251,9 +259,16 @@ export class Interpreter {
 		env.setVariable(stmt.left, stmt.right);
 	}
 	interpretBlockStatement(stmt: BlockStmt, env: Environment) {
+		let returnVal;
 		for (const s of stmt.body) {
-			this.interpretStmt(s, env);
+			if (s.type === "ReturnStatement") {
+				returnVal = this.interpretStmt(s, env);
+				break;
+			} else {
+				this.interpretStmt(s, env);
+			}
 		}
+		return returnVal;
 	}
 	interpretFunctionDeclaration(stmt: FunctionDecl, env: Environment) {
 		const body = stmt.body;
@@ -263,7 +278,7 @@ export class Interpreter {
 			for (const i in args) {
 				context.declareVariable(args_out[i] as any, args[i]);
 			}
-			this.interpretBlockStatement(body, context);
+			return this.interpretBlockStatement(body, context);
 		});
 	}
 	interpretCallExpression(stmt: CallExpr, env: Environment) {
@@ -280,6 +295,10 @@ export class Interpreter {
 	}
 	interpretExpression(expression: Expr, env: Environment) {
 		switch (expression.type) {
+			case "CallExpression": {
+				const e = expression as CallExpr;
+				return this.interpretCallExpression(e, env);
+			}
 			case "Literal": {
 				const e = expression as Literal;
 				if (e.value.type === TokenType.identifier) {
