@@ -13,6 +13,7 @@ import {
 	IfStmt,
 	IterableExpr,
 	LambdaFunctionDecl,
+	MemberExpr,
 	ObjectExpr,
 	ProgramStmt,
 	Property,
@@ -252,6 +253,7 @@ export class Parser {
 	parseExpression(): Expr {
 		return this.parseRangeExpr();
 	}
+
 	parseRangeExpr() {
 		const left = this.parseComparisonExpr();
 		const token = this.at();
@@ -277,8 +279,79 @@ export class Parser {
 		return left;
 	}
 
+	parseObjectLiteral() {
+		if (this.at().type !== TokenType.curly) {
+			return this.parseArrayLiteral();
+		}
+		this.match(TokenType.curly, "{");
+		const properties: Property[] = [];
+		while (this.at().type !== TokenType.curly && this.at().value !== "}") {
+			const key = this.parseIdentifier();
+			// {key}
+			if (this.at().type == TokenType.comma) {
+				// {key ,}
+				this.eat();
+				properties.push({
+					key,
+					value: key,
+					type: "Property",
+				} as Property);
+				continue;
+			} else if (this.at().type == TokenType.curly && this.at(1).value == "}") {
+				// {key}
+				properties.push({
+					key,
+					value: key,
+					type: "Property",
+				} as Property);
+				continue;
+			}
+			//{key : val}
+			this.match(TokenType.colon);
+			const value = this.parseExpression();
+			properties.push({ key, value, type: "Property" } as Property);
+			if (this.at().type == TokenType.comma) this.match(TokenType.comma);
+		}
+		this.match(TokenType.curly, "}");
+		return { properties, type: "ObjectExpression" } as ObjectExpr;
+	}
+
+	parseArrayLiteral(): ArrayExpr {
+		if (this.at().type !== TokenType.bracket) {
+			return this.parseEqualExpr();
+		}
+		this.match(TokenType.bracket, "[");
+		const elements: Expr[] = [];
+		// 处理空数组情况
+		if (this.at().value === "]") {
+			this.eat();
+			return {
+				items: elements,
+				type: "ArrayExpression",
+			} as ArrayExpr;
+		}
+		let index = 0;
+		while (this.tokens.length > 0 && this.at().value !== "]") {
+			const expr = this.parseExpression();
+			elements.push({
+				type: "Property",
+				key: LiteralFn(index),
+				value: expr,
+			} as Property);
+			if (this.at().type === TokenType.comma) {
+				this.eat();
+			}
+			index++;
+		}
+		this.match(TokenType.bracket, "]");
+		return {
+			items: elements,
+			type: "ArrayExpression",
+		} as ArrayExpr;
+	}
+
 	parseComparisonExpr() {
-		const left = this.parseEqualExpr();
+		const left = this.parseObjectLiteral();
 		const token = this.at();
 		const op = ["<", ">"];
 		if (
@@ -352,6 +425,7 @@ export class Parser {
 		this.match(TokenType.paren, ")"); // eat the closing paren
 		return args;
 	}
+
 	parseCall() {
 		const left = this.parseBinaryExpr();
 		const token = this.at();
@@ -367,7 +441,7 @@ export class Parser {
 	}
 
 	parseBinaryExpr() {
-		const left = this.parsePrimary();
+		const left = this.parseMemberExpr();
 		const token = this.at();
 		const op = ["+", "-", "*", "/"];
 		if (
@@ -384,6 +458,35 @@ export class Parser {
 			} as BinaryExpr;
 		}
 		return left;
+	}
+
+	parseMemberExpr() {
+		let object = this.parsePrimary();
+		while (this.at().value === "[" || this.at().type === TokenType.dot) {
+			if (this.at().type === TokenType.dot) {
+				this.eat();
+				const property = this.parseIdentifier();
+				object = {
+					object,
+					property,
+					computed: false,
+					type: "MemberExpression",
+				} as MemberExpr;
+			} else if (this.at().type === TokenType.bracket) {
+				this.eat();
+				const expr = this.parseExpression();
+				this.match(TokenType.bracket, "]");
+				object = {
+					object,
+					property: expr,
+					computed: true,
+					type: "MemberExpression",
+				} as MemberExpr;
+			} else {
+				throw new Error(`Unexpected token: ${JSON.stringify(this.at())}`);
+			}
+		}
+		return object;
 	}
 
 	parsePrimary(): Expr {
@@ -405,48 +508,10 @@ export class Parser {
 				const expr = this.parseExpression();
 				this.match(TokenType.paren, ")"); // eat the closing paren
 				return expr;
-			case TokenType.bracket: {
-				const elements: Expr[] = [];
-				this.match(TokenType.bracket, "[");
-				// 处理空数组情况
-				if (this.at().value === "]") {
-					this.eat();
-					return {
-						items: elements,
-						type: "ArrayExpression",
-					} as ArrayExpr;
-				}
-				while (this.tokens.length > 0 && this.at().value !== "]") {
-					const expr = this.parseExpression();
-					elements.push(expr);
-					if (this.at().type === TokenType.comma) {
-						this.eat();
-					}
-				}
-				this.match(TokenType.bracket, "]");
-				return {
-					items: elements,
-					type: "ArrayExpression",
-				} as ArrayExpr;
-			}
-			case TokenType.curly: {
-				const properties: Property[] = [];
-				this.match(TokenType.curly, "{");
-				while (this.tokens.length > 0 && this.at().type !== TokenType.curly) {
-					const key = this.parseExpression();
-					this.match(TokenType.colon, ":");
-					const value = this.parseExpression();
-					properties.push({ key, value } as Property);
-					if (this.at().type === TokenType.comma) {
-						this.eat();
-					}
-				}
-				this.match(TokenType.curly, "}");
-				return {
-					properties,
-					type: "ObjectExpression",
-				} as ObjectExpr;
-			}
+			case TokenType.curly:
+				return this.parseObjectLiteral();
+			case TokenType.bracket:
+				return this.parseArrayLiteral();
 			case TokenType.fn:
 				// lamdada function
 				this.match(TokenType.fn);

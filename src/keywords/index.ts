@@ -11,6 +11,7 @@ export enum TokenType {
 	curly, // {}
 	comma, // ,
 	colon, // :
+	dot, // .
 	// special tokens
 	if,
 	else,

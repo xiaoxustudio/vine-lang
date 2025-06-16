@@ -160,8 +160,9 @@ export interface ArrayExpr extends Node {
 
 export interface MemberExpr extends Expr {
 	object: Expr;
-	property: Expr[];
+	property: Expr | Expr[];
 	type: "MemberExpression";
+	computed: boolean; // [] or .value
 }
 
 export interface AssignmentExpr extends Expr {

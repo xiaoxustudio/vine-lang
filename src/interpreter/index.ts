@@ -22,6 +22,7 @@ import {
 	IterableExpr,
 	SwitchStmt,
 	ReturnStmt,
+	MemberExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
@@ -331,7 +332,11 @@ export class Interpreter {
 			}
 			case "ArrayExpression": {
 				const e = expression as ArrayExpr;
-				return e.items.map(element => this.interpretExpression(element, env));
+				const obj = new Map<Literal, Expr>();
+				for (const target of e.items) {
+					obj.set(target.key, this.interpretExpression(target.value, env));
+				}
+				return obj;
 			}
 			case "ObjectExpression": {
 				const e = expression as ObjectExpr;
@@ -375,6 +380,25 @@ export class Interpreter {
 					type: "iterable",
 					object: this.interpretExpression(e.object, env),
 				};
+			}
+			case "MemberExpression": {
+				const e = expression as MemberExpr;
+				const object = this.interpretExpression(e.object, env);
+				const prop = e.property as Expr;
+				switch (object.type) {
+					case "iterable": {
+						if (object.object instanceof Map) {
+							const prop_val = toRealValue(prop as Literal);
+							const result = {};
+							for (const [key, value] of object.object) {
+								result[toRealValue(key)] =
+									value.type === "iterable" ? value.object : value;
+							}
+							return result[prop_val];
+						}
+						throw new Error("Cannot access member of non-iterable object");
+					}
+				}
 			}
 			default:
 				throw new Error(
