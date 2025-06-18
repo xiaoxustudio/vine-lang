@@ -19,7 +19,6 @@ import {
 	ArrayExpr,
 	ObjectExpr,
 	LambdaFunctionDecl,
-	IterableExpr,
 	SwitchStmt,
 	ReturnStmt,
 	MemberExpr,
@@ -193,6 +192,8 @@ export class Interpreter {
 				return this.interpretSwitchStatement(stmt as SwitchStmt, env);
 			case "ReturnStatement":
 				return this.interpretReturnStatement(stmt as ReturnStmt, env);
+			case "MemberExpression":
+				return this.interpretMemberExpression(stmt as MemberExpr, env);
 			default:
 				return this.interpretExpression(stmt as ExpressionStmt, env);
 		}
@@ -230,7 +231,7 @@ export class Interpreter {
 				context.declareVariable(id as Literal, LiteralFn(i));
 				this.interpretBlockStatement(body, context);
 			}
-		} else if (range.type === "iterable") {
+		} else if (["ArrayExpression", "ObjectExpression"].includes(range.type)) {
 			const iterable = Array.isArray(range.object)
 				? range.object
 				: mapToObject(range.object, toRealValue);
@@ -291,6 +292,16 @@ export class Interpreter {
 		const value = this.interpretExpression(stmt.value, env);
 		env.declareVariable(stmt.id, value);
 	}
+	interpretMemberExpression(e: MemberExpr, env: Environment) {
+		const object = this.interpretExpression(e.object, env);
+		const prop_val = toRealValue(e.property as Literal);
+		if (object instanceof Map) {
+			const targetObject = mapToObject(object, toRealValue);
+			return targetObject[prop_val];
+		} else {
+			return object[prop_val];
+		}
+	}
 	interpretExpressionStatement(stmt: ExpressionStmt, env: Environment) {
 		this.interpretExpression(stmt.expression, env);
 	}
@@ -334,7 +345,9 @@ export class Interpreter {
 				const e = expression as ArrayExpr;
 				const obj = new Map<Literal, Expr>();
 				for (const target of e.items) {
-					obj.set(target.key, this.interpretExpression(target.value, env));
+					const key = target.key;
+					key.value.type = TokenType.index;
+					obj.set(key, this.interpretExpression(target.value, env));
 				}
 				return obj;
 			}
@@ -374,31 +387,8 @@ export class Interpreter {
 					return this.interpretBlockStatement(e.body, context);
 				};
 			}
-			case "IterableExpression": {
-				const e = expression as IterableExpr;
-				return {
-					type: "iterable",
-					object: this.interpretExpression(e.object, env),
-				};
-			}
 			case "MemberExpression": {
-				const e = expression as MemberExpr;
-				const object = this.interpretExpression(e.object, env);
-				const prop = e.property as Expr;
-				switch (object.type) {
-					case "iterable": {
-						if (object.object instanceof Map) {
-							const prop_val = toRealValue(prop as Literal);
-							const result = {};
-							for (const [key, value] of object.object) {
-								result[toRealValue(key)] =
-									value.type === "iterable" ? value.object : value;
-							}
-							return result[prop_val];
-						}
-						throw new Error("Cannot access member of non-iterable object");
-					}
-				}
+				return this.interpretMemberExpression(expression as MemberExpr, env);
 			}
 			default:
 				throw new Error(

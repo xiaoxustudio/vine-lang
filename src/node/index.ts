@@ -72,11 +72,6 @@ export interface RangeExpr extends Expr {
 	type: "RangeExpression";
 }
 
-export interface IterableExpr extends Expr {
-	type: "IterableExpression";
-	object: Expr;
-}
-
 export interface EqualExpr extends Expr {
 	left: Expr;
 	right: Expr;

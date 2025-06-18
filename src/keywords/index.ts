@@ -12,6 +12,8 @@ export enum TokenType {
 	comma, // ,
 	colon, // :
 	dot, // .
+	// built-in  tokens
+	index,
 	// special tokens
 	if,
 	else,
