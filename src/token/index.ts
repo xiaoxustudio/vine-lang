@@ -72,7 +72,6 @@ export function tokenlize(code: string): Token[] {
 				addToken(TokenType.comma, ch);
 			} else if (ch === ":") {
 				addToken(TokenType.colon, ch);
-			} else if (isString(ch)) {
 			} else if (ch === ".") {
 				addToken(TokenType.dot, ch);
 			} else if (isString(ch)) {

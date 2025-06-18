@@ -221,25 +221,23 @@ export class Interpreter {
 		const range = this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
 		if (range.type === "range") {
-			const step = range[2].value === ".." ? 1 : Number(range[2].value);
-			for (
-				let i = Number(range[0].value);
-				i <= Number(range[1].value);
-				i += step
-			) {
+			const step = range?.step.value === ".." ? 1 : Number(range[2].value);
+			const start = toRealValue(range.start);
+			const end = toRealValue(range.end);
+			for (let i = start; i <= end; i += step) {
 				const context = new Environment(env);
 				context.declareVariable(id as Literal, LiteralFn(i));
 				this.interpretBlockStatement(body, context);
 			}
-		} else if (["ArrayExpression", "ObjectExpression"].includes(range.type)) {
-			const iterable = Array.isArray(range.object)
-				? range.object
-				: mapToObject(range.object, toRealValue);
+		} else if (range instanceof Map) {
+			const iterable = Array.isArray(range)
+				? range
+				: mapToObject(range, toRealValue);
 			for (const key in iterable) {
 				const val = iterable[key];
 				const context = new Environment(env);
 				context.declareVariable(id as Literal, LiteralFn(key));
-				context.declareVariable(value as Literal, val);
+				if (value) context.declareVariable(value as Literal, val);
 				this.interpretBlockStatement(body, context);
 			}
 		}

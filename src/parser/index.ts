@@ -224,7 +224,7 @@ export class Parser {
 			value = this.parseIdentifier();
 		}
 		this.match(TokenType.in); // eat the 'for' token
-		const range = this.parseRangeExpr();
+		const range = this.parseExpression() as RangeExpr;
 		const body = this.parseBlock();
 		return {
 			init: identifier,
@@ -250,30 +250,7 @@ export class Parser {
 		return { body, type: "BlockStatement" } as BlockStmt;
 	}
 	parseExpression(): Expr {
-		return this.parseRangeExpr();
-	}
-
-	parseRangeExpr() {
-		const left = this.parseComparisonExpr();
-		const token = this.at();
-		if (
-			token &&
-			token.type === TokenType.operator &&
-			token.value === "." &&
-			this.at(1).type === TokenType.operator &&
-			this.at(1).value === "."
-		) {
-			const operator = this.eat();
-			operator.value = "..";
-			this.eat();
-			return {
-				start: left,
-				step: operator,
-				end: this.parseRangeExpr(),
-				type: "RangeExpression",
-			} as RangeExpr;
-		}
-		return left;
+		return this.parseComparisonExpr();
 	}
 
 	parseObjectLiteral() {
@@ -459,6 +436,17 @@ export class Parser {
 
 	parseMemberExpr() {
 		let object = this.parsePrimary();
+		if (this.at().type === TokenType.dot && this.at(1).type === TokenType.dot) {
+			const operator = this.eat();
+			operator.value = "..";
+			this.eat();
+			return {
+				start: object,
+				step: operator,
+				end: this.parseMemberExpr(),
+				type: "RangeExpression",
+			} as RangeExpr;
+		}
 		while (this.at().value === "[" || this.at().type === TokenType.dot) {
 			if (this.at().type === TokenType.dot) {
 				this.eat();
