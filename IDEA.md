@@ -4,8 +4,13 @@
 
 用 js 中的 class，在 js 中创建一个类，然后在脚本调用时，会创建一个对象并添加到本地环境，就可以使用其方法了
 
+使用`use`关键字导入
+
 ```vine
-import (* as Std, Core) from 'std'
+use vine
+use vine::fs
+use vine::fs as fs, vine::path as path
+use "./vine"
 ```
 
 ### 标准库的编写
