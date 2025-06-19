@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import { tokenlize } from "../token/index";
 import path from "path";
 import { Parser } from "@/parser";
 import { Environment } from "@/environment";
 import { Interpreter } from "@/interpreter";
+import { tokenlize } from "../token/index";
 
 export default function runFile(pathFile: string) {
 	try {

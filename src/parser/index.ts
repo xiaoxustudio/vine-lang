@@ -19,6 +19,7 @@ import {
 	RangeExpr,
 	ReturnStmt,
 	SwitchStmt,
+	UseDecl,
 	VariableDecl,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
@@ -83,6 +84,8 @@ export class Parser {
 	parseStatement() {
 		const token = this.at();
 		switch (token.type) {
+			case TokenType.use:
+				return this.parseUse();
 			case TokenType.comment:
 				this.eat();
 				return this.parseStatement();
@@ -101,6 +104,17 @@ export class Parser {
 			default:
 				return this.parseExpression();
 		}
+	}
+
+	parseUse() {
+		this.match(TokenType.use);
+		const specifiers = [];
+		const source = this.parsePrimary();
+		return {
+			type: "UseDeclaration",
+			source,
+			specifiers,
+		} as UseDecl;
 	}
 
 	parseReturn() {

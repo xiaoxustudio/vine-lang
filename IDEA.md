@@ -7,10 +7,11 @@
 使用`use`关键字导入
 
 ```vine
-use vine
-use vine::fs
-use vine::fs as fs, vine::path as path
-use "./vine"
+use vine # 整体导入
+use vine:fs # 指定导入
+use vine:(fs as fs, path as path) # 指定导入并重命名
+use "./vine" # 导入指定文件
+
 ```
 
 ### 标准库的编写

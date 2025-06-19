@@ -1,0 +1,3 @@
+use "./fn"
+
+print(add())

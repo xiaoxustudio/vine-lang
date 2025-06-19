@@ -23,7 +23,8 @@ export type NodeType =
 	| "IterableExpression"
 	| "IfStatement"
 	| "ForStatement"
-	| "SwitchStmtement";
+	| "SwitchStmtement"
+	| "UseDeclaration";
 
 export interface Node {
 	type: NodeType;
@@ -34,6 +35,12 @@ export interface Expr extends Node {}
 export interface Literal extends Expr {
 	value: Token;
 	type: "Literal";
+}
+
+export interface UseDecl extends Node {
+	type: "UseDeclaration";
+	specifiers: Expr[];
+	source: Literal;
 }
 
 export interface BlockStmt extends Node {
@@ -172,3 +179,5 @@ export interface BinaryExpr extends Expr {
 	right: Expr;
 	operator: Token;
 }
+
+/*  */
