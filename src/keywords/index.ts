@@ -16,6 +16,7 @@ export enum TokenType {
 	index,
 	// special tokens
 	use,
+	expose,
 	as,
 	if,
 	else,
@@ -48,6 +49,7 @@ export const Keywords = {
 	nil: TokenType.nil,
 	true: TokenType.boolean,
 	false: TokenType.boolean,
+	expose: TokenType.expose,
 	use: TokenType.use,
 	as: TokenType.as,
 	if: TokenType.if,

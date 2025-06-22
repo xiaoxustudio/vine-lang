@@ -12,6 +12,7 @@ export default function runFile(pathFile: string) {
 		const tokens = tokenlize(sourceCode);
 		const ast = new Parser(tokens).parse();
 		const env = new Environment();
+		env.setFilePath(absPath);
 		const ipt = new Interpreter(env);
 		ipt.interpret(ast);
 	} catch (err) {

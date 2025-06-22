@@ -24,7 +24,8 @@ export type NodeType =
 	| "IfStatement"
 	| "ForStatement"
 	| "SwitchStmtement"
-	| "UseDeclaration";
+	| "UseDeclaration"
+	| "ExposeStmtement";
 
 export interface Node {
 	type: NodeType;
@@ -35,6 +36,11 @@ export interface Expr extends Node {}
 export interface Literal extends Expr {
 	value: Token;
 	type: "Literal";
+}
+
+export interface ExposeStmt extends Node {
+	body: Expr;
+	type: "ExposeStmtement";
 }
 
 export interface UseDecl extends Node {

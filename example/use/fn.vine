@@ -1,3 +1,5 @@
+expose let aa = 123
+
 expose fn add(a,b):
     return a + b
 end

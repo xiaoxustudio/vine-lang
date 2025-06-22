@@ -7,6 +7,7 @@ import {
 	CaseBlockStmt,
 	CompareExpr,
 	EqualExpr,
+	ExposeStmt,
 	Expr,
 	ForStmt,
 	FunctionDecl,
@@ -101,15 +102,25 @@ export class Parser {
 				return this.parseSwitch();
 			case TokenType.return:
 				return this.parseReturn();
+			case TokenType.expose:
+				return this.parseExpose();
 			default:
 				return this.parseExpression();
 		}
 	}
 
+	parseExpose() {
+		this.match(TokenType.expose);
+		return {
+			type: "ExposeStmtement",
+			body: this.parseStatement(),
+		} as ExposeStmt;
+	}
+
 	parseUse() {
 		this.match(TokenType.use);
+		const source = this.parseString();
 		const specifiers = [];
-		const source = this.parsePrimary();
 		return {
 			type: "UseDeclaration",
 			source,
@@ -191,6 +202,14 @@ export class Parser {
 		}
 		return { value: this.eat(), type: "Literal" } as Literal;
 	}
+	parseString() {
+		const token = this.at();
+		if (token.type !== TokenType.string) {
+			throw new Error(`Unexpected token: ${token.type}`);
+		}
+		return { value: this.eat(), type: "Literal" } as Literal;
+	}
+
 	parseLet() {
 		this.match(TokenType.let); // eat the 'let' token
 		const identifier = this.parseIdentifier();

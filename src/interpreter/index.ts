@@ -1,3 +1,5 @@
+import path from "node:path";
+import fs from "node:fs";
 import { Environment } from "@/environment";
 import {
 	ProgramStmt,
@@ -22,9 +24,13 @@ import {
 	SwitchStmt,
 	ReturnStmt,
 	MemberExpr,
+	UseDecl,
+	ExposeStmt,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
+import { Parser } from "@/parser";
+import { tokenlize } from "@/token";
 
 export class TokenUnit {
 	_token: Token;
@@ -194,8 +200,51 @@ export class Interpreter {
 				return this.interpretReturnStatement(stmt as ReturnStmt, env);
 			case "MemberExpression":
 				return this.interpretMemberExpression(stmt as MemberExpr, env);
+			case "UseDeclaration":
+				return this.interpretUseDeclaration(stmt as UseDecl, env);
+			case "ExposeStmtement":
+				return this.interpretExposeStatement(stmt as ExposeStmt, env);
 			default:
 				return this.interpretExpression(stmt as ExpressionStmt, env);
+		}
+	}
+
+	interpretExposeStatement(stmt: ExposeStmt, env: Environment) {
+		const name = (() => {
+			switch (stmt.body.type) {
+				case "FunctionDeclaration":
+					return (stmt.body as FunctionDecl).id;
+				case "VariableDeclaration":
+					return (stmt.body as VariableDecl).id;
+				default:
+					return null;
+			}
+		})();
+		if (name) {
+			this.interpretStmt(stmt.body, env);
+			env.setExpose(name);
+		}
+	}
+
+	interpretUseDeclaration(stmt: UseDecl, env: Environment) {
+		const origin = stmt.source;
+		const module = stmt.specifiers;
+		if (!module.length) {
+			const pathName = path.join(
+				path.dirname(env.getFilePath()),
+				toRealValue(origin)
+			);
+			const text = fs.readFileSync(
+				pathName.endsWith(".vine") ? pathName : pathName + ".vine"
+			);
+			const parser = new Parser(tokenlize(text.toString()));
+			const program = parser.parse();
+			const context = new Environment();
+			env.link("*", context);
+			context.link("*", env);
+			const interpreter = new Interpreter(context);
+			interpreter.interpret(program);
+			return;
 		}
 	}
 
