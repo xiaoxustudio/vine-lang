@@ -228,24 +228,20 @@ export class Interpreter {
 
 	interpretUseDeclaration(stmt: UseDecl, env: Environment) {
 		const origin = stmt.source;
-		const module = stmt.specifiers;
-		if (!module.length) {
-			const pathName = path.join(
-				path.dirname(env.getFilePath()),
-				toRealValue(origin)
-			);
-			const text = fs.readFileSync(
-				pathName.endsWith(".vine") ? pathName : pathName + ".vine"
-			);
-			const parser = new Parser(tokenlize(text.toString()));
-			const program = parser.parse();
-			const context = new Environment();
-			env.link("*", context);
-			context.link("*", env);
-			const interpreter = new Interpreter(context);
-			interpreter.interpret(program);
-			return;
-		}
+		const pathName = path.join(
+			path.dirname(env.getFilePath()),
+			toRealValue(origin)
+		);
+		const text = fs.readFileSync(
+			pathName.endsWith(".vine") ? pathName : pathName + ".vine"
+		);
+		const parser = new Parser(tokenlize(text.toString()));
+		const program = parser.parse();
+		const context = new Environment();
+		env.link("*", context);
+		context.link("*", env);
+		const interpreter = new Interpreter(context);
+		interpreter.interpret(program);
 	}
 
 	interpretReturnStatement(stmt: ReturnStmt, env: Environment) {

@@ -40,13 +40,14 @@ export interface Literal extends Expr {
 
 export interface ExposeStmt extends Node {
 	body: Expr;
+	specifiers: Expr[];
 	type: "ExposeStmtement";
 }
 
 export interface UseDecl extends Node {
 	type: "UseDeclaration";
-	specifiers: Expr[];
 	source: Literal;
+	as: Expr[];
 }
 
 export interface BlockStmt extends Node {

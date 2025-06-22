@@ -1,0 +1,7 @@
+use "./fn" as fn
+
+let a = 1
+let b = 1
+
+print(fn.add(a,b))
+print(fn.add(aa,b))
