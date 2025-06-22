@@ -47,7 +47,7 @@ export interface ExposeStmt extends Node {
 export interface UseDecl extends Node {
 	type: "UseDeclaration";
 	source: Literal;
-	as: Expr[];
+	specifiers: Expr[];
 }
 
 export interface BlockStmt extends Node {
