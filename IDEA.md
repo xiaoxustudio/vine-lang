@@ -9,7 +9,8 @@
 ```vine
 use vine # 整体导入
 use vine:fs # 指定导入
-use vine:(fs as fs, path as path) # 指定导入并重命名
+use vine:fs as vfs # 指定导入并重命名
+use vine pick (fs as fs, path as path) # 指定多项导入并重命名
 use "./vine" # 导入指定文件
 
 ```
