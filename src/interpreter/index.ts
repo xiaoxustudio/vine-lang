@@ -26,6 +26,7 @@ import {
 	MemberExpr,
 	UseDecl,
 	ExposeStmt,
+	UseDefaultSpecifier,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
@@ -238,8 +239,14 @@ export class Interpreter {
 		const parser = new Parser(tokenlize(text.toString()));
 		const program = parser.parse();
 		const context = new Environment();
-		env.link("*", context);
-		context.link("*", env);
+		if (stmt.specifiers.length) {
+			for (const i of stmt.specifiers) {
+				const local = this.interpretStmt(i, env) as Literal;
+				env.link(toRealValue(local), context);
+			}
+		} else {
+			env.link("*", context);
+		}
 		const interpreter = new Interpreter(context);
 		interpreter.interpret(program);
 	}
@@ -321,7 +328,7 @@ export class Interpreter {
 		env.declareVariable(stmt.id, (args: Expr[]) => {
 			const context = new Environment(env);
 			for (const i in args) {
-				context.declareVariable(args_out[i] as any, args[i]);
+				if (args_out[i]) context.declareVariable(args_out[i] as any, args[i]);
 			}
 			return this.interpretBlockStatement(body, context);
 		});
@@ -341,6 +348,13 @@ export class Interpreter {
 		if (object instanceof Map) {
 			const targetObject = mapToObject(object, toRealValue);
 			return targetObject[prop_val];
+		} else if (
+			object?.type === TokenType.env &&
+			object.value instanceof Environment
+		) {
+			const useImport = object.value as Environment;
+			const val = useImport.getVariable(LiteralFn(prop_val));
+			return val;
 		} else {
 			return object[prop_val];
 		}
@@ -432,6 +446,14 @@ export class Interpreter {
 			}
 			case "MemberExpression": {
 				return this.interpretMemberExpression(expression as MemberExpr, env);
+			}
+			case "UseDefaultSpecifier": {
+				const e = expression as UseDefaultSpecifier;
+				const val = e.local;
+				if (e.local.type !== "Literal") {
+					throw new Error("UseDefaultSpecifier local must be a literal");
+				}
+				return val;
 			}
 			default:
 				throw new Error(

@@ -21,6 +21,8 @@ import {
 	ReturnStmt,
 	SwitchStmt,
 	UseDecl,
+	UseDefaultSpecifier,
+	UseSpecifier,
 	VariableDecl,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
@@ -117,10 +119,41 @@ export class Parser {
 		} as ExposeStmt;
 	}
 
+	parseAs() {
+		const specifiers = [];
+		this.match(TokenType.bracket, "(");
+		while (this.at().type !== TokenType.bracket) {
+			const specifier = this.parseIdentifier();
+			specifiers.push({
+				type: "UseSpecifier",
+				local: specifier,
+			} as UseSpecifier);
+		}
+		this.match(TokenType.bracket, ")");
+		return specifiers;
+	}
+
+	parseDefaultAs() {
+		this.match(TokenType.as);
+		return {
+			type: "UseDefaultSpecifier",
+			local: this.parseIdentifier(),
+		} as UseDefaultSpecifier;
+	}
+
 	parseUse() {
 		this.match(TokenType.use);
 		const source = this.parseString();
 		const specifiers = [];
+		if (this.at().type === TokenType.as) {
+			const specifier = this.parseDefaultAs();
+			specifiers.push(specifier);
+		}
+		if (this.at().type === TokenType.pick) {
+			this.match(TokenType.pick);
+			const specifier = this.parseAs();
+			specifiers.push(specifier);
+		}
 		return {
 			type: "UseDeclaration",
 			source,

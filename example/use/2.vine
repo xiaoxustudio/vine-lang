@@ -1,7 +1,7 @@
-use "./fn" as fn
+use "./fn" as fmodule
 
 let a = 1
 let b = 1
 
-print(fn.add(a,b))
-print(fn.add(aa,b))
+print(fmodule.add(a,b))
+print(fmodule.add(fmodule.aa,b))

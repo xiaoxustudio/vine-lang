@@ -1,25 +1,30 @@
 import { Expr, Literal } from "@/node";
 import { JSRuntimeFn, Token } from "@/keywords";
-import { isNil, isNilLiteral, LiteralFn, toRealValue } from "@/utils";
+import {
+	isNil,
+	isNilLiteral,
+	LiteralFn,
+	TokenExEnvironment,
+	toRealValue,
+	UseEnvFn,
+} from "@/utils";
 
 export class Environment {
-	private Variable: Map<string, Expr | JSRuntimeFn>;
+	private Variable: Map<string, Expr | JSRuntimeFn | TokenExEnvironment>;
 	private staticVariable: Set<string>;
 	private parent?: Environment;
 	private filePath?: string;
 	private expose: Set<string>;
-	private linksEnv?: Map<string, Environment>;
 	constructor(parent?: Environment) {
 		this.filePath = parent?.getFilePath() || __dirname;
 		this.parent = parent;
-		this.linksEnv = new Map();
 		this.Variable = new Map();
 		this.staticVariable = new Set();
 		this.expose = new Set();
 		this.setup();
 	}
 	link(name: string, env: Environment) {
-		env.linksEnv?.set(name, this);
+		this.Variable.set(name, UseEnvFn(env));
 	}
 	setFilePath(filePath: string) {
 		this.filePath = filePath;
@@ -54,13 +59,9 @@ export class Environment {
 	}
 	resolveVariableEnv(name: string): Environment | undefined {
 		if (this.Variable.has(name)) return this;
-		for (const [key, val] of this.linksEnv) {
-			if (key === "*" && val.Variable.has(name) && val.expose.has(name)) {
-				return val;
-			}
+		if (this.parent == undefined) {
+			throw new Error(`Resolve variable ${name} not declared`);
 		}
-		if (this.parent == undefined)
-			throw new Error(`Variable ${name} not declared`);
 		return this.parent.resolveVariableEnv(name);
 	}
 	declareVariable(name: Literal, value: Expr | JSRuntimeFn, is_static = false) {
@@ -73,12 +74,13 @@ export class Environment {
 	}
 	getVariable(name: Literal) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
-		const real_name = name.value.value;
-		return this.resolveVariableEnv(real_name)?.Variable.get(real_name);
+		const real_name = toRealValue(name);
+		const resolveEnv = this.resolveVariableEnv(real_name);
+		return resolveEnv?.Variable.get(real_name);
 	}
 	setVariable(name: Literal, value: Expr) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
-		const real_name = name.value.value;
+		const real_name = toRealValue(name);
 		if (this.staticVariable.has(real_name))
 			throw new Error(`Variable ${real_name} is static`);
 		if (!this.Variable.has(real_name))
@@ -87,11 +89,11 @@ export class Environment {
 	}
 	deleteVariable(name: Literal) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
-		const real_name = name.value.value;
+		const real_name = toRealValue(name);
 		if (this.staticVariable.has(real_name))
 			throw new Error(`Variable ${real_name} is static`);
 		if (!this.Variable.has(real_name))
-			throw new Error(`Variable ${real_name} not declared`);
+			throw new Error(`Variable ${real_name} not declared and can't delete`);
 		return this.Variable.delete(real_name);
 	}
 }

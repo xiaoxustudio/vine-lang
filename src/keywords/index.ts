@@ -14,9 +14,11 @@ export enum TokenType {
 	dot, // .
 	// built-in  tokens
 	index,
+	env, // this tag inject to current environment variable list when use keyword
 	// special tokens
 	use,
 	expose,
+	pick,
 	as,
 	if,
 	else,
@@ -50,6 +52,7 @@ export const Keywords = {
 	true: TokenType.boolean,
 	false: TokenType.boolean,
 	expose: TokenType.expose,
+	pick: TokenType.pick,
 	use: TokenType.use,
 	as: TokenType.as,
 	if: TokenType.if,

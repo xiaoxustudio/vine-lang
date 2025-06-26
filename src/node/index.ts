@@ -25,7 +25,9 @@ export type NodeType =
 	| "ForStatement"
 	| "SwitchStmtement"
 	| "UseDeclaration"
-	| "ExposeStmtement";
+	| "ExposeStmtement"
+	| "UseSpecifier"
+	| "UseDefaultSpecifier";
 
 export interface Node {
 	type: NodeType;
@@ -44,10 +46,21 @@ export interface ExposeStmt extends Node {
 	type: "ExposeStmtement";
 }
 
+export interface UseSpecifier extends Node {
+	remote: Literal;
+	local: Literal;
+	type: "UseSpecifier";
+}
+
+export interface UseDefaultSpecifier extends Node {
+	local: Literal;
+	type: "UseDefaultSpecifier";
+}
+
 export interface UseDecl extends Node {
 	type: "UseDeclaration";
 	source: Literal;
-	specifiers: Expr[];
+	specifiers: UseSpecifier[];
 }
 
 export interface BlockStmt extends Node {

@@ -1,5 +1,19 @@
 import { Expr, Literal } from "@/node";
 import { Token, TokenType } from "@/keywords";
+import { Environment } from "@/environment";
+
+export interface TokenExEnvironment extends Omit<Token, "value"> {
+	value: Environment;
+}
+
+export function UseEnvFn(env: Environment) {
+	return {
+		type: TokenType.env,
+		value: env,
+		line: 0,
+		column: 0,
+	} as TokenExEnvironment;
+}
 
 export function LiteralFn(s: string | number | boolean | null | Literal) {
 	if (s && (s as any)?.type === "Literal") {
