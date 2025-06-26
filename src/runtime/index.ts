@@ -5,9 +5,16 @@ import { Environment } from "@/environment";
 import { Interpreter } from "@/interpreter";
 import { tokenlize } from "../token/index";
 
+const cwd = process.cwd();
+
+// 检查是否为打包环境
+const isPackaged = typeof process.env.PKG_EXECPATH !== "undefined";
+
 export default function runFile(pathFile: string) {
 	try {
-		const absPath = path.resolve(__dirname, pathFile);
+		const absPath = isPackaged
+			? path.join(__dirname, pathFile) // 虚拟文件系统
+			: path.join(cwd, pathFile); // 开发环境
 		const sourceCode = fs.readFileSync(absPath, "utf8");
 		const tokens = tokenlize(sourceCode);
 		const ast = new Parser(tokens).parse();
