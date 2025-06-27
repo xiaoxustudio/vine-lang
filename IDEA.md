@@ -7,11 +7,13 @@
 使用`use`关键字导入
 
 ```vine
-use vine # 整体导入
-use vine:fs # 指定导入
-use vine:fs as vfs # 指定导入并重命名
-use vine pick (fs as fs, path as path) # 指定多项导入并重命名
+use "vine" # 整体导入
+use "vine:fs" # 指定导入
+use "vine:fs" as vfs # 指定导入并重命名
+
 use "./vine" # 导入指定文件
+use "vine" as vn # 整体导入并重命名
+use "vine" pick (fs as fs, path as path) # 指定多项导入并重命名
 
 ```
 
