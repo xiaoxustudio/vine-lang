@@ -35,7 +35,7 @@ export class Parser {
 		this.tokens = tokens;
 	}
 
-	at(index = 0) {
+	at(index = 0): Token | undefined {
 		return this.tokens[index];
 	}
 
@@ -322,6 +322,7 @@ export class Parser {
 		if (!noEnd) this.match(TokenType.end); // eat the 'end' token
 		return { body, type: "BlockStatement" } as BlockStmt;
 	}
+
 	parseExpression(): Expr {
 		return this.parseComparisonExpr();
 	}
@@ -509,7 +510,10 @@ export class Parser {
 
 	parseMemberExpr() {
 		let object = this.parsePrimary();
-		if (this.at().type === TokenType.dot && this.at(1).type === TokenType.dot) {
+		if (
+			this.at()?.type === TokenType.dot &&
+			this.at(1)?.type === TokenType.dot
+		) {
 			const operator = this.eat();
 			operator.value = "..";
 			this.eat();
@@ -520,7 +524,7 @@ export class Parser {
 				type: "RangeExpression",
 			} as RangeExpr;
 		}
-		while (this.at().value === "[" || this.at().type === TokenType.dot) {
+		while (this.at()?.value === "[" || this.at()?.type === TokenType.dot) {
 			if (this.at().type === TokenType.dot) {
 				this.eat();
 				const property = this.parseIdentifier();

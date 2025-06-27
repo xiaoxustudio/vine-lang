@@ -4,7 +4,10 @@ import { tokenlize } from "@/token";
 import { Parser } from "@/parser";
 import { Environment } from "@/environment";
 import { Interpreter } from "@/interpreter";
-import { isNil, isNilLiteral, toRealValue } from "@/utils";
+import {
+	builInObjectToString,
+	toRealValue,
+} from "@/utils";
 
 export function replProgram() {
 	const env = new Environment();
@@ -25,9 +28,8 @@ export function replProgram() {
 		},
 		writer: (res: any) => {
 			const output = toRealValue(res);
-			return isNilLiteral(res) && isNil(output)
-				? "\x1b[36mnil\x1b[0m"
-				: (output as string);
+			const strOutput = builInObjectToString(output);
+			return strOutput;
 		},
 	});
 

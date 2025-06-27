@@ -235,7 +235,7 @@ export class Interpreter {
 			toRealValue(origin)
 		);
 		const text = fs.readFileSync(
-			pathName.endsWith(".vine") ? pathName : pathName + ".vine"
+			pathName.endsWith(".vine") ? pathName : `${pathName}.vine`
 		);
 		const parser = new Parser(tokenlize(text.toString()));
 		const program = parser.parse();
@@ -248,8 +248,10 @@ export class Interpreter {
 					}
 					case "UseSpecifier": {
 						const useVal = this.interpretStmt(i, env);
+						// 存储别名键值
 						env.link(toRealValue(useVal.local), context);
 						if (useVal.remote) {
+							// 存储别名键值
 							env.setAsMap(
 								toRealValue(useVal.remote),
 								toRealValue(useVal.local)
@@ -259,6 +261,7 @@ export class Interpreter {
 				}
 			}
 		} else {
+			// 全局链接
 			env.link("*", context);
 		}
 		const interpreter = new Interpreter(context);

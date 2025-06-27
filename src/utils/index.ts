@@ -56,6 +56,7 @@ export function toRealValue(expr: Literal | Token) {
 		case TokenType.nil:
 			return null;
 		default:
+			console.log(expr);
 			return expr?.value
 				? token
 				: Array.isArray(expr)
@@ -67,6 +68,7 @@ export function toRealValue(expr: Literal | Token) {
 }
 
 export function mapToObject(obj: Map<Literal, Expr>, fn: (v: any) => any) {
+	if (!(obj instanceof Map)) throw new Error("obj is not Map");
 	const isArray =
 		obj.entries().next().value[0]?.value?.type === TokenType.index;
 	const result = isArray ? [] : {};
@@ -107,8 +109,24 @@ export function isBuilInObject(expr: Token | Expr) {
 }
 
 export function builInObjectToString(expr: Token | Expr) {
-	const str = (s: string) => `\x1b[94m${s}\x1b[0m`;
-	if (expr instanceof Environment || expr.type === TokenType.env) {
-		return str("[[Environment]]");
+	const str = (s: string, code = 90) => `\x1b[${code}m${s}\x1b[0m`;
+	if (expr instanceof Environment || expr?.type === TokenType.env) {
+		return str("[[Environment]]", 94);
+	}
+	switch (typeof expr) {
+		case "number":
+			return str(expr as unknown as string, 34);
+		case "string":
+			return str(expr as unknown as string, 33);
+		case "boolean":
+			return str(expr as unknown as string, 36);
+		default:
+			if (expr === null) {
+				return str("nil" as unknown as string, 96);
+			}
+			if (Number.isNaN(expr)) {
+				return str("NaN" as unknown as string, 94);
+			}
+			return str(expr as unknown as string);
 	}
 }
