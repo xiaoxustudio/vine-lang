@@ -1,6 +1,8 @@
 import { Expr, Literal } from "@/node";
-import { JSRuntimeFn, Token } from "@/keywords";
+import { JSRuntimeFn, Token, TokenType } from "@/keywords";
 import {
+	builInObjectToString,
+	isBuilInObject,
 	isNil,
 	isNilLiteral,
 	LiteralFn,
@@ -15,16 +17,21 @@ export class Environment {
 	private parent?: Environment;
 	private filePath?: string;
 	private expose: Set<string>;
+	private asMap: Map<string, string>; // for expose as
 	constructor(parent?: Environment) {
 		this.filePath = parent?.getFilePath() || __dirname;
 		this.parent = parent;
 		this.Variable = new Map();
+		this.asMap = new Map();
 		this.staticVariable = new Set();
 		this.expose = new Set();
 		this.setup();
 	}
 	link(name: string, env: Environment) {
 		this.Variable.set(name, UseEnvFn(env));
+	}
+	setAsMap(name: string, as: string) {
+		this.asMap.set(name, as);
 	}
 	setFilePath(filePath: string) {
 		this.filePath = filePath;
@@ -50,6 +57,8 @@ export class Environment {
 						const output = toRealValue(e as unknown as Literal);
 						return isNilLiteral(e as unknown as Literal) && isNil(output)
 							? "\x1b[36mnil\x1b[0m"
+							: isBuilInObject(output)
+							? builInObjectToString(output)
 							: output;
 					})
 				);
@@ -58,7 +67,16 @@ export class Environment {
 		);
 	}
 	resolveVariableEnv(name: string): Environment | undefined {
-		if (this.Variable.has(name)) return this;
+		if (this.Variable.has(name)) {
+			const target = this.Variable.get(name) as TokenExEnvironment;
+			if (
+				target?.type === TokenType.env &&
+				target.value instanceof Environment
+			) {
+				return target.value.resolveVariableEnv(name);
+			}
+			return this;
+		}
 		if (this.parent == undefined) {
 			throw new Error(`Resolve variable ${name} not declared`);
 		}
@@ -74,7 +92,7 @@ export class Environment {
 	}
 	getVariable(name: Literal) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
-		const real_name = toRealValue(name);
+		const real_name = this.asMap.get(toRealValue(name)) || toRealValue(name);
 		const resolveEnv = this.resolveVariableEnv(real_name);
 		return resolveEnv?.Variable.get(real_name);
 	}

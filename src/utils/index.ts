@@ -66,10 +66,6 @@ export function toRealValue(expr: Literal | Token) {
 	}
 }
 
-export function isToken(expr: Expr) {
-	return Object.keys(TokenType).includes(expr?.type);
-}
-
 export function mapToObject(obj: Map<Literal, Expr>, fn: (v: any) => any) {
 	const isArray =
 		obj.entries().next().value[0]?.value?.type === TokenType.index;
@@ -93,6 +89,10 @@ export function mapToObject(obj: Map<Literal, Expr>, fn: (v: any) => any) {
 	return result;
 }
 
+export function isToken(expr: Expr) {
+	return Object.keys(TokenType).includes(expr?.type);
+}
+
 export function isNilLiteral(expr: Literal) {
 	const token = expr?.type === "Literal" ? expr.value : expr;
 	return token?.type === TokenType.nil;
@@ -100,4 +100,15 @@ export function isNilLiteral(expr: Literal) {
 
 export function isNil(input: any) {
 	return input === null || typeof input === "undefined" || input === "nil";
+}
+
+export function isBuilInObject(expr: Token | Expr) {
+	return expr instanceof Environment || expr.type === TokenType.env;
+}
+
+export function builInObjectToString(expr: Token | Expr) {
+	const str = (s: string) => `\x1b[94m${s}\x1b[0m`;
+	if (expr instanceof Environment || expr.type === TokenType.env) {
+		return str("[[Environment]]");
+	}
 }

@@ -27,6 +27,7 @@ import {
 	UseDecl,
 	ExposeStmt,
 	UseDefaultSpecifier,
+	UseSpecifier,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
@@ -241,8 +242,21 @@ export class Interpreter {
 		const context = new Environment();
 		if (stmt.specifiers.length) {
 			for (const i of stmt.specifiers) {
-				const local = this.interpretStmt(i, env) as Literal;
-				env.link(toRealValue(local), context);
+				switch (i.type) {
+					case "UseDefaultSpecifier": {
+						env.link(toRealValue(i.local), context);
+					}
+					case "UseSpecifier": {
+						const useVal = this.interpretStmt(i, env);
+						env.link(toRealValue(useVal.local), context);
+						if (useVal.remote) {
+							env.setAsMap(
+								toRealValue(useVal.remote),
+								toRealValue(useVal.local)
+							);
+						}
+					}
+				}
 			}
 		} else {
 			env.link("*", context);
@@ -454,6 +468,10 @@ export class Interpreter {
 					throw new Error("UseDefaultSpecifier local must be a literal");
 				}
 				return val;
+			}
+			case "UseSpecifier": {
+				const e = expression as UseSpecifier;
+				return { remote: e.remote, local: e.local };
 			}
 			default:
 				throw new Error(

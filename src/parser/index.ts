@@ -121,15 +121,22 @@ export class Parser {
 
 	parseAs() {
 		const specifiers = [];
-		this.match(TokenType.bracket, "(");
-		while (this.at().type !== TokenType.bracket) {
+		this.match(TokenType.paren, "(");
+		while (this.at().type !== TokenType.paren) {
 			const specifier = this.parseIdentifier();
+			let remote;
+			if (this.at().type === TokenType.as) {
+				this.match(TokenType.as);
+				remote = this.parseIdentifier();
+			}
 			specifiers.push({
 				type: "UseSpecifier",
 				local: specifier,
+				remote,
 			} as UseSpecifier);
+			if (this.at().type === TokenType.comma) this.eat();
 		}
-		this.match(TokenType.bracket, ")");
+		this.match(TokenType.paren, ")");
 		return specifiers;
 	}
 
@@ -151,8 +158,8 @@ export class Parser {
 		}
 		if (this.at().type === TokenType.pick) {
 			this.match(TokenType.pick);
-			const specifier = this.parseAs();
-			specifiers.push(specifier);
+			const specifiersToAs = this.parseAs();
+			specifiers.push(...specifiersToAs);
 		}
 		return {
 			type: "UseDeclaration",

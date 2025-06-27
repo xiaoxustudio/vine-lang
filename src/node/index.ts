@@ -60,7 +60,7 @@ export interface UseDefaultSpecifier extends Node {
 export interface UseDecl extends Node {
 	type: "UseDeclaration";
 	source: Literal;
-	specifiers: UseSpecifier[];
+	specifiers: (UseSpecifier | UseDefaultSpecifier)[];
 }
 
 export interface BlockStmt extends Node {

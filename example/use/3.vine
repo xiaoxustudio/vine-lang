@@ -1,0 +1,7 @@
+use "./fn" pick (add as fadd,aa)
+
+let a = 1
+let b = 1
+
+print(fadd(a,b))
+print(fadd(aa,b))
