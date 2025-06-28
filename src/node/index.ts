@@ -10,7 +10,6 @@ export type NodeType =
 	| "MemberExpression"
 	| "CallExpression"
 	| "BlockStatement"
-	| "CaseBlockStatement"
 	| "FunctionDeclaration"
 	| "ReturnStatement"
 	| "LambdaFunctionDecl"
@@ -24,6 +23,8 @@ export type NodeType =
 	| "IfStatement"
 	| "ForStatement"
 	| "SwitchStmtement"
+	| "CaseBlockStatement"
+	| "DefaultCaseBlockStatement"
 	| "UseDeclaration"
 	| "ExposeStmtement"
 	| "UseSpecifier"
@@ -70,8 +71,14 @@ export interface BlockStmt extends Node {
 
 export interface CaseBlockStmt extends Node {
 	body: BlockStmt;
-	test?: Expr;
+	test: Expr;
 	type: "CaseBlockStatement";
+}
+
+export interface DefaultCaseBlockStmt extends Node {
+	body: BlockStmt;
+	test: Expr;
+	type: "DefaultCaseBlockStatement";
 }
 
 export interface ReturnStmt extends Node {
@@ -155,7 +162,7 @@ export interface ForStmt extends Node {
 
 export interface SwitchStmt extends Node {
 	test: Expr;
-	cases: CaseBlockStmt[];
+	cases: (DefaultCaseBlockStmt | CaseBlockStmt)[];
 	type: "SwitchStmtement";
 }
 

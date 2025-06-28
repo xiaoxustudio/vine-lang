@@ -1,0 +1,13 @@
+let calc = fn(num):
+    switch num :
+        case 1:
+            return "是1"
+        case 2:
+            return "是2"
+        default:
+            return "不是1也不是2"
+    end
+end
+
+print(calc(1))
+print(calc(4))

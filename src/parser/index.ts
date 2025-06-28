@@ -6,6 +6,7 @@ import {
 	CallExpr,
 	CaseBlockStmt,
 	CompareExpr,
+	DefaultCaseBlockStmt,
 	EqualExpr,
 	ExposeStmt,
 	Expr,
@@ -181,7 +182,7 @@ export class Parser {
 		this.match(TokenType.switch); // eat the 'switch' token
 		const test = this.parseExpression();
 		this.match(TokenType.colon);
-		const cases: CaseBlockStmt[] = [];
+		const cases: (CaseBlockStmt | DefaultCaseBlockStmt)[] = [];
 		while (this.at().type !== TokenType.end) {
 			const caseesBlock = this.parseSwitchCase();
 			cases.push(caseesBlock);
@@ -198,26 +199,40 @@ export class Parser {
 		const token = this.eat();
 		if ([TokenType.case, TokenType.default].includes(token.type)) {
 			let test = null;
+			let isDefault = false;
 			if (token.type !== TokenType.default) {
 				test = this.parseExpression();
+				isDefault = true;
 			}
 			this.match(TokenType.colon, ":"); // eat the ':' token
 			let bodyStmt;
-			const body = [];
+			const body: Expr[] = [];
 			while (
 				this.tokens.length > 0 &&
-				![TokenType.break, TokenType.case].includes(this.at().type)
+				![
+					TokenType.break,
+					TokenType.case,
+					TokenType.default,
+					TokenType.end,
+				].includes(this.at().type)
 			) {
 				const stmt = this.parseStatement();
 				body.push(stmt);
 			}
 			bodyStmt = { body, type: "BlockStatement" } as BlockStmt;
-			this.match(TokenType.break);
-			return {
-				test,
-				body: bodyStmt,
-				type: "CaseBlockStatement",
-			} as CaseBlockStmt;
+			if (body[body.length - 1].type !== "ReturnStatement")
+				this.match(TokenType.break);
+			return isDefault
+				? ({
+						test,
+						body: bodyStmt,
+						type: "DefaultCaseBlockStatement",
+				  } as DefaultCaseBlockStmt)
+				: ({
+						test,
+						body: bodyStmt,
+						type: "CaseBlockStatement",
+				  } as CaseBlockStmt);
 		}
 		throw new Error(`Unexpected case token: ${token.type}`);
 	}

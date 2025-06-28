@@ -276,12 +276,15 @@ export class Interpreter {
 	interpretSwitchStatement(stmt: SwitchStmt, env: Environment) {
 		const test = this.interpretExpression(stmt.test, env);
 		for (const case_ of stmt.cases) {
-			const test_ = this.interpretExpression(case_.test, env);
-			if (test_.type === test.type && test_.value === test.value) {
-				this.interpretBlockStatement(case_.body, env);
-				return;
+			if (!case_.test) {
+				return this.interpretBlockStatement(case_.body, env);
+			}
+			const test_ = this.interpretExpression(case_.test, env) as Token;
+			if (test_?.type === test.type && test_?.value === test.value) {
+				return this.interpretBlockStatement(case_.body, env);
 			}
 		}
+		return null;
 	}
 
 	interpretForStatement(stmt: ForStmt, env: Environment) {
@@ -330,11 +333,9 @@ export class Interpreter {
 	interpretBlockStatement(stmt: BlockStmt, env: Environment) {
 		let returnVal;
 		for (const s of stmt.body) {
+			returnVal = this.interpretStmt(s, env);
 			if (s.type === "ReturnStatement") {
-				returnVal = this.interpretStmt(s, env);
 				break;
-			} else {
-				this.interpretStmt(s, env);
 			}
 		}
 		return returnVal;
@@ -352,7 +353,9 @@ export class Interpreter {
 	}
 	interpretCallExpression(stmt: CallExpr, env: Environment) {
 		const callee = this.interpretExpression(stmt.callee, env);
-		const args = stmt.arguments.map(arg => this.interpretExpression(arg, env));
+		const args = stmt.arguments.map(arg => {
+			return this.interpretExpression(arg, env);
+		});
 		return typeof callee === "function" ? callee(args) : callee;
 	}
 	interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
@@ -458,7 +461,8 @@ export class Interpreter {
 					for (const i in args) {
 						context.declareVariable(e.arguments[i] as any, args[i]);
 					}
-					return this.interpretBlockStatement(e.body, context);
+					const v = this.interpretBlockStatement(e.body, context);
+					return v;
 				};
 			}
 			case "MemberExpression": {
