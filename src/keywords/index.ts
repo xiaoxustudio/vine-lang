@@ -11,6 +11,7 @@ export enum TokenType {
 	curly, // {}
 	comma, // ,
 	colon, // :
+	question, // ?
 	dot, // .
 	// built-in  tokens
 	index,

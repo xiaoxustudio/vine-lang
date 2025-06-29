@@ -28,6 +28,7 @@ import {
 	ExposeStmt,
 	UseDefaultSpecifier,
 	UseSpecifier,
+	TernaryExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { LiteralFn, mapToObject, toRealValue } from "@/utils";
@@ -441,6 +442,19 @@ export class Interpreter {
 				const left = this.interpretExpression(e.left, env);
 				const right = this.interpretExpression(e.right, env);
 				return new TokenUnit(left).logicOperate(e.operator, right).getToken();
+			}
+			case "TernayExpression": {
+				const e = expression as TernaryExpr;
+				const condition = this.interpretExpression(e.condition, env);
+				if (condition.type === TokenType.boolean) {
+					if (condition.value === "true") {
+						return this.interpretStmt(e.consequent, env);
+					} else if (e.alternate) {
+						return this.interpretStmt(e.alternate, env);
+					}
+					throw new Error("Condition must have a consequent or alternate");
+				}
+				throw new Error("Condition must be a boolean");
 			}
 			case "EqualExpression": {
 				const e = expression as EqualExpr;

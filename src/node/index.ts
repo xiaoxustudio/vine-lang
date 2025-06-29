@@ -18,6 +18,7 @@ export type NodeType =
 	| "AssignmentExpression"
 	| "CompareExpression"
 	| "EqualExpression"
+	| "TernayExpression"
 	| "RangeExpression"
 	| "IterableExpression"
 	| "IfStatement"
@@ -131,6 +132,13 @@ export interface AssignmentExpr extends Expr {
 	right: Expr;
 	operator: Token;
 	type: "AssignmentExpression";
+}
+
+export interface TernaryExpr extends Expr {
+	condition: Expr;
+	consequent: Expr;
+	alternate: Expr;
+	type: "TernayExpression";
 }
 
 export interface ProgramStmt extends Node {

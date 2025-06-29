@@ -70,6 +70,8 @@ export function tokenlize(code: string): Token[] {
 				addToken(TokenType.curly, ch);
 			} else if (ch === ",") {
 				addToken(TokenType.comma, ch);
+			} else if (ch === "?") {
+				addToken(TokenType.question, ch);
 			} else if (ch === ":") {
 				addToken(TokenType.colon, ch);
 			} else if (ch === ".") {

@@ -21,6 +21,7 @@ import {
 	RangeExpr,
 	ReturnStmt,
 	SwitchStmt,
+	TernaryExpr,
 	UseDecl,
 	UseDefaultSpecifier,
 	UseSpecifier,
@@ -257,6 +258,7 @@ export class Parser {
 		}
 		return { value: this.eat(), type: "Literal" } as Literal;
 	}
+
 	parseString() {
 		const token = this.at();
 		if (token.type !== TokenType.string) {
@@ -339,7 +341,24 @@ export class Parser {
 	}
 
 	parseExpression(): Expr {
-		return this.parseComparisonExpr();
+		return this.parseTernay();
+	}
+
+	parseTernay() {
+		const left = this.parseComparisonExpr();
+		if (this.at()?.type === TokenType.question) {
+			this.eat();
+			const consequent = this.parseExpression();
+			this.match(TokenType.colon);
+			const alternate = this.parseExpression();
+			return {
+				type: "TernayExpression",
+				condition: left,
+				consequent,
+				alternate,
+			} as TernaryExpr;
+		}
+		return left;
 	}
 
 	parseObjectLiteral() {
