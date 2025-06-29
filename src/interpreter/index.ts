@@ -31,7 +31,9 @@ import {
 	TernaryExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
-import { LiteralFn, mapToObject, toRealValue } from "@/utils";
+import LiteralFn from "@/utils/LiteralFn";
+import mapToObject from "@/utils/mapToObject";
+import toRealValue from "@/utils/toRealValue";
 import { Parser } from "@/parser";
 import { tokenlize } from "@/token";
 

@@ -29,7 +29,7 @@ import {
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
-import { LiteralFn } from "@/utils";
+import LiteralFn from "@/utils/LiteralFn";
 
 export class Parser {
 	tokens: Token[];

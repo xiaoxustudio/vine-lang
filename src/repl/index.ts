@@ -4,10 +4,8 @@ import { tokenlize } from "@/token";
 import { Parser } from "@/parser";
 import { Environment } from "@/environment";
 import { Interpreter } from "@/interpreter";
-import {
-	builInObjectToString,
-	toRealValue,
-} from "@/utils";
+import builInObjectToString from "@/utils/builInObjectToString";
+import toRealValue from "@/utils/toRealValue";
 
 export function replProgram() {
 	const env = new Environment();

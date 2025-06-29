@@ -1,15 +1,10 @@
 import { Expr, Literal } from "@/node";
 import { JSRuntimeFn, Token, TokenType } from "@/keywords";
-import {
-	builInObjectToString,
-	isBuilInObject,
-	isNil,
-	isNilLiteral,
-	LiteralFn,
-	TokenExEnvironment,
-	toRealValue,
-	UseEnvFn,
-} from "@/utils";
+import { isNilLiteral, isNil, isBuilInObject } from "@/utils";
+import builInObjectToString from "@/utils/builInObjectToString";
+import LiteralFn from "@/utils/LiteralFn";
+import toRealValue from "@/utils/toRealValue";
+import UseEnvFn, { TokenExEnvironment } from "@/utils/UseEnvFn";
 
 export class Environment {
 	private Variable: Map<string, Expr | JSRuntimeFn | TokenExEnvironment>;
