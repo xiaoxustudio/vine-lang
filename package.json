@@ -4,11 +4,12 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"dev": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node output/index.js",
-		"build": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && node ./scripts/build.js",
+		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs ",
+		"dev": "pnpm prebuild&& node output/index.js",
+		"build": "pnpm prebuild && node ./scripts/build.js",
 		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl",
-		"running": "node output/index.js"
+		"prerun": "node output/index.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -17,6 +18,7 @@
 	"devDependencies": {
 		"@rollup/plugin-alias": "^5.1.1",
 		"@rollup/plugin-node-resolve": "^16.0.1",
+		"@rollup/plugin-typescript": "^12.1.4",
 		"@types/node": "^22.15.29",
 		"pkg": "^5.8.1",
 		"rcedit": "^4.0.1",
