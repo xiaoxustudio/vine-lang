@@ -1,8 +1,19 @@
 {
 	"name": "vine-lang",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
+	"description": "a language parser and runtime",
+	"main": "dist/index.js",
+	"keywords": [
+		"utils",
+		"tokenlize",
+		"parser",
+		"ast",
+		"language"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/xiaoxustudio/vine-lang"
+	},
 	"scripts": {
 		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs ",
 		"dev": "pnpm prebuild&& node output/index.js",
@@ -11,9 +22,11 @@
 		"repl": "pnpm dev repl",
 		"prerun": "node output/index.js"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"files": [
+		"dist"
+	],
+	"author": "xuran",
+	"license": "MIT",
 	"packageManager": "pnpm@10.11.0",
 	"devDependencies": {
 		"@rollup/plugin-alias": "^5.1.1",

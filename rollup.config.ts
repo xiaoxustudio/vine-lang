@@ -12,7 +12,7 @@ const projectRootDir = path.resolve(__dirname);
 export default defineConfig({
 	input: "./src/index.ts",
 	output: {
-		dir: "output",
+		dir: "dist",
 		format: "cjs",
 		assetFileNames: "[name]-[hash][extname].js",
 	},
