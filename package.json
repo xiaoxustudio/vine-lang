@@ -20,7 +20,7 @@
 		"@rollup/plugin-node-resolve": "^16.0.1",
 		"@rollup/plugin-typescript": "^12.1.4",
 		"@types/node": "^22.15.29",
-		"pkg": "^5.8.1",
+		"@yao-pkg/pkg": "^6.5.1",
 		"rcedit": "^4.0.1",
 		"rollup": "^4.41.1",
 		"rollup-plugin-typescript2": "^0.36.0",
