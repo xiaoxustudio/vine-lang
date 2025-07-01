@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
-import { Environment } from "@/environment";
+import Environment from "@/environment";
 import {
 	ProgramStmt,
 	Node,
@@ -34,7 +34,7 @@ import { Token, TokenType } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
 import mapToObject from "@/utils/mapToObject";
 import toRealValue from "@/utils/toRealValue";
-import { Parser } from "@/parser";
+import Parser from "@/parser";
 import { tokenlize } from "@/token";
 
 export class TokenUnit {
@@ -165,7 +165,7 @@ export class TokenUnit {
 	}
 }
 
-export class Interpreter {
+export default class Interpreter {
 	private readonly _context: Environment;
 
 	constructor(context: any) {

@@ -1,4 +1,4 @@
-import { Environment } from "@/environment";
+import Environment from "@/environment";
 import { Token, TokenType } from "@/keywords";
 
 export interface TokenExEnvironment extends Omit<Token, "value"> {

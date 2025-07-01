@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import path from "path";
-import { Parser } from "@/parser";
-import { Environment } from "@/environment";
-import { Interpreter } from "@/interpreter";
+import Parser from "@/parser";
+import Environment from "@/environment";
+import Interpreter from "@/interpreter";
 import { tokenlize } from "../token/index";
 
 const cwd = process.cwd();

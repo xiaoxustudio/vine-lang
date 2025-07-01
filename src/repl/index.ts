@@ -1,9 +1,9 @@
 /* repl program */
 import * as repl from "repl";
 import { tokenlize } from "@/token";
-import { Parser } from "@/parser";
-import { Environment } from "@/environment";
-import { Interpreter } from "@/interpreter";
+import Parser from "@/parser";
+import Environment from "@/environment";
+import Interpreter from "@/interpreter";
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 

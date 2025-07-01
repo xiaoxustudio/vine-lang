@@ -6,7 +6,7 @@ import LiteralFn from "@/utils/LiteralFn";
 import toRealValue from "@/utils/toRealValue";
 import UseEnvFn, { TokenExEnvironment } from "@/utils/UseEnvFn";
 
-export class Environment {
+export default class Environment {
 	private Variable: Map<string, Expr | JSRuntimeFn | TokenExEnvironment>;
 	private staticVariable: Set<string>;
 	private parent?: Environment;

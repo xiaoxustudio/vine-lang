@@ -1,6 +1,6 @@
 import { Expr, Literal } from "@/node";
 import { Token, TokenType } from "@/keywords";
-import { Environment } from "@/environment";
+import Environment from "@/environment";
 
 export function isToken(expr: Expr) {
 	return Object.keys(TokenType).includes(expr?.type);

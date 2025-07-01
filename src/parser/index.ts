@@ -31,7 +31,7 @@ import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
 import LiteralFn from "@/utils/LiteralFn";
 
-export class Parser {
+export default class Parser {
 	tokens: Token[];
 	constructor(tokens: Token[]) {
 		this.tokens = tokens;
