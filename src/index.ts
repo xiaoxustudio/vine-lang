@@ -1,4 +1,4 @@
-import runFile from "./runtime";
+import runFile from "./runFile";
 import { replProgram } from "./repl";
 import { tokenlize } from "./token/index";
 import Interpreter from "./interpreter";
@@ -9,6 +9,8 @@ import toRealValue from "./utils/toRealValue";
 import builInObjectToString from "./utils/builInObjectToString";
 import LiteralFn from "./utils/LiteralFn";
 import UseEnvFn from "./utils/UseEnvFn";
+import Vine from "./runtime";
+
 const args = process.argv;
 
 if (args.length > 2) {
@@ -23,6 +25,7 @@ if (args.length > 2) {
 }
 
 export {
+	Vine,
 	Interpreter,
 	Parser,
 	Environment,

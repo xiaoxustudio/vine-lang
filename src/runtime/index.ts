@@ -1,28 +1,23 @@
-import * as fs from "fs";
-import path from "path";
-import Parser from "@/parser";
 import Environment from "@/environment";
 import Interpreter from "@/interpreter";
-import { tokenlize } from "../token/index";
+import Parser from "@/parser";
+import { tokenlize } from "@/token";
+import toRealValue from "@/utils/toRealValue";
 
-const cwd = process.cwd();
-
-// 检查是否为打包环境
-const isPackaged = typeof process.env.PKG_EXECPATH !== "undefined";
-
-export default function runFile(pathFile: string) {
-	try {
-		const absPath = isPackaged
-			? path.join(__dirname, pathFile) // 虚拟文件系统
-			: path.join(cwd, pathFile); // 开发环境
-		const sourceCode = fs.readFileSync(absPath, "utf8");
-		const tokens = tokenlize(sourceCode);
-		const ast = new Parser(tokens).parse();
-		const env = new Environment();
-		env.setFilePath(absPath);
-		const ipt = new Interpreter(env);
-		ipt.interpret(ast);
-	} catch (err) {
-		console.error("running error:", err);
+class Vine {
+	parser: Parser;
+	interpreter: Interpreter;
+	env: Environment;
+	constructor() {
+		this.parser = new Parser([]);
+		this.interpreter = new Interpreter(new Environment());
+		this.env = new Environment();
+	}
+	run(code: string) {
+		this.parser.pushStack(tokenlize(code));
+		const program = this.parser.parse();
+		return toRealValue(this.interpreter.interpret(program));
 	}
 }
+
+export default Vine;

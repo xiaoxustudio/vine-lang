@@ -37,6 +37,10 @@ export default class Parser {
 		this.tokens = tokens;
 	}
 
+	pushStack(token: Token[]) {
+		this.tokens.push(...token);
+	}
+
 	at(index = 0): Token | undefined {
 		return this.tokens[index];
 	}
