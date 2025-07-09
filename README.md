@@ -57,8 +57,6 @@ The project uses `pnpm` as the package manager.
 pnpm install
 ```
 
-## dev
-
 Local run
 
 ```bash
@@ -101,4 +99,4 @@ Please feel free to raise your valuable "issue", and we will handle it.
 
 # LICENSE
 
-MIT
+[MIT](./LICENSE)

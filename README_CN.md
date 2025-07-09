@@ -4,6 +4,12 @@
 
 <h2 align="center">Vine Language</h2>
 
+<p align="center">
+<img alt="NPM Downloads" src="https://img.shields.io/npm/dm/vine-lang">
+<img alt="NPM Version" src="https://img.shields.io/npm/v/vine-lang">
+<img alt="logo" src="https://img.shields.io/badge/license-MIT-blue.svg">
+</p>
+
 - [简体中文](./README_CN.md)
 - [English](./README.md)
 
@@ -43,7 +49,7 @@ console.log(result3); // 2
 //  ...more , you can see the example in vine respository
 ```
 
-# 开发
+# 项目
 
 项目使用 pnpm 作为包管理器
 
@@ -51,7 +57,7 @@ console.log(result3); // 2
 pnpm install
 ```
 
-## dev
+## 开发
 
 本地运行
 
@@ -59,7 +65,7 @@ pnpm install
 pnpm run dev
 ```
 
-## build
+## 构建
 
 构建 exe
 
@@ -67,7 +73,7 @@ pnpm run dev
 pnpm run build
 ```
 
-## repl
+## 交互
 
 Vine 提供了 repl 功能，可以在命令行中直接运行代码
 
@@ -77,7 +83,7 @@ pnpm run repl
 Vine > print("Hello, World!")
 ```
 
-## interpret
+## 解释
 
 同样也可以运行后缀名为`.vine`的代码文件
 
@@ -95,4 +101,4 @@ pnpm ipt <path>
 
 # LICENSE
 
-MIT
+[MIT](./LICENSE)
