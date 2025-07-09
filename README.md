@@ -4,6 +4,12 @@
 
 <h2 align="center">Vine Language</h2>
 
+<p align="center">
+<img alt="NPM Downloads" src="https://img.shields.io/npm/dm/vine-lang">
+<img alt="NPM Version" src="https://img.shields.io/npm/v/vine-lang">
+<img alt="logo" src="https://img.shields.io/badge/license-MIT-blue.svg">
+</p>
+
 - [简体中文](./README_CN.md)
 - [English](./README.md)
 
