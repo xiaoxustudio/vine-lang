@@ -1,18 +1,26 @@
 import { Expr, Literal } from "@/node";
-import { JSRuntimeFn, Token, TokenType } from "@/keywords";
-import { isNilLiteral, isNil, isBuilInObject } from "@/utils";
-import builInObjectToString from "@/utils/builInObjectToString";
+import { JSRuntimeClass, JSRuntimeFn, TokenType } from "@/keywords";
+import { isInSideModule } from "@/utils";
 import LiteralFn from "@/utils/LiteralFn";
 import toRealValue from "@/utils/toRealValue";
 import UseEnvFn, { TokenExEnvironment } from "@/utils/UseEnvFn";
+import { VineIO, Global } from "@/libs";
+
+export const ModuleList = {
+	"vine:io": VineIO,
+	"vine:global": Global,
+};
 
 export default class Environment {
-	private Variable: Map<string, Expr | JSRuntimeFn | TokenExEnvironment>;
+	private Variable: Map<
+		string,
+		Expr | JSRuntimeFn | JSRuntimeClass | TokenExEnvironment
+	>;
 	private staticVariable: Set<string>;
 	private parent?: Environment;
-	private filePath?: string;
 	private expose: Set<string>;
 	private asMap: Map<string, string>; // for expose as
+	filePath?: string;
 	constructor(parent?: Environment) {
 		this.filePath = parent?.getFilePath() || __dirname;
 		this.parent = parent;
@@ -44,22 +52,22 @@ export default class Environment {
 	setup() {
 		this.declareVariable(LiteralFn("true"), LiteralFn(true), true);
 		this.declareVariable(LiteralFn("false"), LiteralFn(false), true);
-		this.declareVariable(
-			LiteralFn("print"),
-			(args: Token[]) => {
-				console.log(
-					...args.map(e => {
-						const output = toRealValue(e as unknown as Literal);
-						return isNilLiteral(e as unknown as Literal) && isNil(output)
-							? "\x1b[36mnil\x1b[0m"
-							: isBuilInObject(output)
-							? builInObjectToString(output)
-							: output;
-					})
-				);
-			},
-			true
-		);
+		// 注入全局模块
+		const Gloablkyes = Object.keys(Global);
+		for (const key of Gloablkyes) {
+			this.declareVariable(LiteralFn(key), Global[key], true);
+		}
+	}
+
+	registerGlobalModule(name: string, env: Environment) {
+		const LikeModule = ModuleList[name];
+		if (isInSideModule(LikeModule)) {
+			const obj = new Map<Literal, Expr>();
+			for (const key in LikeModule) {
+				obj.set(LiteralFn(key), LikeModule[key]);
+			}
+			this.declareVariable(LiteralFn(name.split("vine:")[1]), obj as any);
+		}
 	}
 	resolveVariableEnv(name: string): Environment | undefined {
 		if (this.Variable.has(name)) {
@@ -108,5 +116,9 @@ export default class Environment {
 		if (!this.Variable.has(real_name))
 			throw new Error(`Variable ${real_name} not declared and can't delete`);
 		return this.Variable.delete(real_name);
+	}
+	replaceVariable(name: Literal, value: Expr) {
+		this.deleteVariable(name);
+		this.declareVariable(name, value);
 	}
 }

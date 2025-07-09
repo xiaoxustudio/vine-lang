@@ -39,6 +39,7 @@ export enum TokenType {
 }
 
 export type JSRuntimeFn = (args?: any) => void;
+export type JSRuntimeClass = { new (...args: any[]): any }; 
 
 export interface Token {
 	type: TokenType;

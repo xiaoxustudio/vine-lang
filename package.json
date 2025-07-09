@@ -16,12 +16,12 @@
 	},
 	"scripts": {
 		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs ",
-		"dev": "pnpm prebuild&& node output/index.js",
+		"dev": "pnpm prebuild && pnpm prerun",
 		"build": "pnpm prebuild",
 		"exebuild": "pnpm prebuild && node ./scripts/build.js",
 		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl",
-		"prerun": "node output/index.js"
+		"prerun": "node dist/index.js"
 	},
 	"files": [
 		"dist"

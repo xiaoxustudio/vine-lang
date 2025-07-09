@@ -1,0 +1,16 @@
+use "vine:io"
+
+if io.exists("./2.txt"):
+    print("File exists")
+else:
+    print("File does not exist")
+end
+
+
+let res = io.read("./1.txt")
+print(res)
+
+io.write("./1.txt", "Hello, World!")
+
+res = io.read("./1.txt")
+print(res)

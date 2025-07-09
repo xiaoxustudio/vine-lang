@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
-import Environment from "@/environment";
+import Environment, { ModuleList } from "@/environment";
 import {
 	ProgramStmt,
 	Node,
@@ -237,11 +237,6 @@ export default class Interpreter {
 			path.dirname(env.getFilePath()),
 			toRealValue(origin)
 		);
-		const text = fs.readFileSync(
-			pathName.endsWith(".vine") ? pathName : `${pathName}.vine`
-		);
-		const parser = new Parser(tokenlize(text.toString()));
-		const program = parser.parse();
 		const context = new Environment();
 		if (stmt.specifiers.length) {
 			for (const i of stmt.specifiers) {
@@ -267,8 +262,24 @@ export default class Interpreter {
 			// 全局链接
 			env.link("*", context);
 		}
-		const interpreter = new Interpreter(context);
-		interpreter.interpret(program);
+		// 判断是否是内置模块
+		const moduleName = path.basename(pathName);
+		const insideModule = moduleName.startsWith("vine:");
+		if (insideModule) {
+			// 内置模块
+			if (Object.keys(ModuleList).includes(moduleName)) {
+				env.registerGlobalModule(moduleName, context);
+			}
+		} else {
+			// 外部模块
+			const text = fs.readFileSync(
+				pathName.endsWith(".vine") ? pathName : `${pathName}.vine`
+			);
+			const parser = new Parser(tokenlize(text.toString()));
+			const program = parser.parse();
+			const interpreter = new Interpreter(context);
+			interpreter.interpret(program);
+		}
 	}
 
 	interpretReturnStatement(stmt: ReturnStmt, env: Environment) {
@@ -320,8 +331,9 @@ export default class Interpreter {
 
 	interpretIfStatement(stmt: IfStmt, env: Environment) {
 		const condition = this.interpretExpression(stmt.test, env) as Token;
-		if (condition.type === TokenType.boolean) {
-			if (condition.value === "true") {
+		const realValue = toRealValue(condition);
+		if (typeof realValue === "boolean") {
+			if (realValue) {
 				return this.interpretStmt(stmt.consequent, env);
 			} else if (stmt.alternate) {
 				return this.interpretStmt(stmt.alternate, env);
@@ -331,7 +343,7 @@ export default class Interpreter {
 	}
 
 	interpretAssignmentExpression(stmt: AssignmentExpr, env: Environment) {
-		env.setVariable(stmt.left, stmt.right);
+		env.setVariable(stmt.left, this.interpretExpression(stmt.right, env));
 	}
 	interpretBlockStatement(stmt: BlockStmt, env: Environment) {
 		let returnVal;
@@ -357,9 +369,10 @@ export default class Interpreter {
 	interpretCallExpression(stmt: CallExpr, env: Environment) {
 		const callee = this.interpretExpression(stmt.callee, env);
 		const args = stmt.arguments.map(arg => {
-			return this.interpretExpression(arg, env);
+			const a = this.interpretExpression(arg, env);
+			return a;
 		});
-		return typeof callee === "function" ? callee(args) : callee;
+		return typeof callee === "function" ? callee.apply(env, args) : callee;
 	}
 	interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
 		const value = this.interpretExpression(stmt.value, env);
