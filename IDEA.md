@@ -20,3 +20,48 @@ use "vine" pick (fs as fs, path as path) # 指定多项导入并重命名
 ### 标准库的编写
 
 其实标准库我更倾向于用`vine`自己本身来编写，所以尽量把底层的东西暴漏出来，并用`vine`来调用封装组合为标准库
+
+### 实现异步
+
+使用`task`关键字，在函数前加上`task`，然后使用`wait`关键字来等待异步函数的返回值
+
+```vine
+task fn main():
+    print("hello world")
+end
+task fn foo():
+    print("foo fn")
+end
+wait main();
+wait foo();
+```
+
+链式调用
+```vine
+task fn main():
+    print("hello world")
+    return 1
+end
+task fn foo():
+    print("foo fn")
+    return 2
+end
+task fn bar():
+    print("bar fn")
+    return 3
+end
+
+
+main()
+to (res):
+    print()
+to (res):
+    print(res)
+to (res):
+    print(res)
+end
+```
+
+
+
+
