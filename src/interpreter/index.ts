@@ -36,6 +36,7 @@ import mapToObject from "@/utils/mapToObject";
 import toRealValue from "@/utils/toRealValue";
 import Parser from "@/parser";
 import { tokenlize } from "@/token";
+import { FunctionTag } from "@/utils";
 
 export class TokenUnit {
 	_token: Token;
@@ -358,21 +359,31 @@ export default class Interpreter {
 	interpretFunctionDeclaration(stmt: FunctionDecl, env: Environment) {
 		const body = stmt.body;
 		const args_out = stmt.arguments;
-		env.declareVariable(stmt.id, (args: Expr[]) => {
+		const fn = (args: Expr[]) => {
 			const context = new Environment(env);
 			for (const i in args) {
 				if (args_out[i]) context.declareVariable(args_out[i] as any, args[i]);
 			}
 			return this.interpretBlockStatement(body, context);
+		};
+		Object.defineProperty(fn, "type", {
+			value: FunctionTag.FN,
+			enumerable: true,
+			writable: false,
+			configurable: false,
 		});
+		env.declareVariable(stmt.id, fn);
 	}
 	interpretCallExpression(stmt: CallExpr, env: Environment) {
 		const callee = this.interpretExpression(stmt.callee, env);
-		const args = stmt.arguments.map(arg => {
-			const a = this.interpretExpression(arg, env);
-			return a;
-		});
-		return typeof callee === "function" ? callee.apply(env, args) : callee;
+		const args = stmt.arguments.map(arg => this.interpretExpression(arg, env));
+		let res: any;
+		try {
+			res = typeof callee === "function" ? callee.apply(env, args) : callee;
+		} catch (e) {
+			throw new Error(`CallExpression error: ${e}`);
+		}
+		return res;
 	}
 	interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
 		const value = this.interpretExpression(stmt.value, env);
@@ -382,8 +393,12 @@ export default class Interpreter {
 		const object = this.interpretExpression(e.object, env);
 		const prop_val = toRealValue(e.property as Literal);
 		if (object instanceof Map) {
-			const targetObject = mapToObject(object, toRealValue);
-			return targetObject[prop_val];
+			if (!Object.fromEntries(object)["[object Object]"]) {
+				return Object.fromEntries(object)[prop_val];
+			} else {
+				const targetObject = mapToObject(object, toRealValue);
+				return targetObject[prop_val];
+			}
 		} else if (
 			object?.type === TokenType.env &&
 			object.value instanceof Environment

@@ -3,6 +3,8 @@ import { Literal } from "@/node";
 import mapToObject from "./mapToObject";
 
 export default function toRealValue(expr: Literal | Token) {
+	if (typeof expr === "function") return expr;
+	if (expr instanceof Date) return expr;
 	const token = expr?.type === "Literal" ? expr.value : expr;
 	switch (token?.type) {
 		case TokenType.index:

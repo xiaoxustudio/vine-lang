@@ -6,7 +6,8 @@ export default function mapToObject(
 	obj: Map<Literal, Expr>,
 	fn: (v: any) => any
 ) {
-	if (!(obj instanceof Map)) throw new Error("obj is not Map");
+	if (!(obj instanceof Map))
+		throw new Error("obj is not Map , current type is : " + typeof obj);
 	const isArray =
 		obj.entries().next().value[0]?.value?.type === TokenType.index;
 	const result = isArray ? [] : {};

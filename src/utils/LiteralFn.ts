@@ -1,7 +1,9 @@
 import { TokenType } from "@/keywords";
 import { Literal } from "@/node";
 
-export default function LiteralFn(s: string | number | boolean | null | Literal) {
+export default function LiteralFn(
+	s: string | number | boolean | null | Literal
+) {
 	if (s && (s as any)?.type === "Literal") {
 		return s as Literal;
 	}

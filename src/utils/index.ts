@@ -3,6 +3,11 @@ import { Token, TokenType } from "@/keywords";
 import Environment from "@/environment";
 import { ModuleTag } from "@/libs/package";
 
+export const FunctionTag = {
+	FN: Symbol("function"),
+	FN_ASYNC: Symbol("function_async"),
+};
+
 export function isToken(expr: Expr) {
 	return Object.keys(TokenType).includes(expr?.type);
 }

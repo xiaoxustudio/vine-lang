@@ -1,25 +1,32 @@
 import { Token } from "@/keywords";
 import { Literal } from "@/node";
-import { isNilLiteral, isNil, isBuilInObject } from "@/utils";
+import { isNilLiteral, isNil, isBuilInObject, FunctionTag } from "@/utils";
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 
 const print = (args: Token[]) => {
 	const isArray = Array.isArray(args);
-	const toLocalRealvalue = (e: Token) => {
-		const output = toRealValue(e as unknown as Literal);
+	const toLocalRealvalue = (e: Token, toRaal = true) => {
+		const output = toRaal ? toRealValue(e as unknown as Literal) : e;
 		return isNilLiteral(e as unknown as Literal) && isNil(output)
 			? "\x1b[36mnil\x1b[0m"
 			: isBuilInObject(output)
 			? builInObjectToString(output)
+			: output?.type === FunctionTag.FN || typeof output === "function"
+			? "\x1b[36m[[Fn]]\x1b[0m"
 			: output;
 	};
-	const results =
-		typeof args === "object"
-			? isArray
-				? args.map(e => toLocalRealvalue(e))
-				: toRealValue(args)
-			: args;
+	// 原生js数据类型
+	if (args instanceof Map) {
+		const entries = Object.fromEntries(args);
+		console.log(entries);
+		return;
+	}
+	// Vine基础数据类型
+	const results = isArray
+		? args.map(e => toLocalRealvalue(e))
+		: toLocalRealvalue(args);
+
 	console.log(...(isArray ? results : [results]));
 };
 

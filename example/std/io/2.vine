@@ -1,0 +1,6 @@
+use "vine:io"
+
+let res = io.info("./1.txt")
+
+print(res)
+
