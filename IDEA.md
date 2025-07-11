@@ -25,6 +25,8 @@ use "vine" pick (fs as fs, path as path) # 指定多项导入并重命名
 
 使用`task`关键字，在函数前加上`task`，然后使用`wait`关键字来等待异步函数的返回值
 
+当我们定义了多个任务时，使用`run`关键字来执行任务，并使用`to`关键字来指定任务的异步回调函数，可指定多个回调函数，回调函数的参数为上一个任务的返回值
+
 ```vine
 task fn main():
     print("hello world")
@@ -52,7 +54,7 @@ task fn bar():
 end
 
 
-main()
+run main()
 to (res):
     print()
 to (res):
