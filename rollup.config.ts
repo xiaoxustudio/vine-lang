@@ -4,11 +4,6 @@ import typescript from "rollup-plugin-typescript2";
 import resolve from "@rollup/plugin-node-resolve";
 import path from "path";
 
-const customResolver = resolve({
-	extensions: [".mjs", ".js", ".jsx", ".json", ".sass", ".scss"],
-});
-const projectRootDir = path.resolve(__dirname);
-
 export default defineConfig({
 	input: "./src/index.ts",
 	output: {
@@ -23,11 +18,10 @@ export default defineConfig({
 		alias({
 			entries: [
 				{
-					find: "@/",
-					replacement: path.resolve(projectRootDir, "src"),
+					find: "@",
+					replacement: path.resolve(__dirname, "src"),
 				},
 			],
-			customResolver: customResolver as any,
 		}),
 		resolve(),
 	],

@@ -15,7 +15,7 @@
 		"url": "git+https://github.com/xiaoxustudio/vine-lang.git"
 	},
 	"scripts": {
-		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs ",
+		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && tsc-alias -p tsconfig.json",
 		"dev": "pnpm prebuild && pnpm prerun",
 		"build": "pnpm prebuild",
 		"exebuild": "pnpm prebuild && node ./scripts/build.js",
@@ -37,6 +37,7 @@
 		"@yao-pkg/pkg": "^6.5.1",
 		"rollup": "^4.41.1",
 		"rollup-plugin-typescript2": "^0.36.0",
+		"tsc-alias": "^1.8.16",
 		"typescript": "^5.8.3"
 	}
 }
