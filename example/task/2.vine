@@ -1,0 +1,18 @@
+task fn a():
+    print("函数a")
+    return 1
+end
+task fn b(val):
+    print("函数b：" + val)
+    return 2
+end
+
+
+let data = wait run a()
+to (res):
+    return b(res)
+end
+
+print("全局：" + data)
+
+

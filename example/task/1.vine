@@ -1,0 +1,9 @@
+task fn a():
+    print("函数a")
+end
+
+
+run a()
+print("全局")
+
+

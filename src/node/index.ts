@@ -2,34 +2,41 @@ import { Token } from "@/keywords";
 
 export type NodeType =
 	| "Program"
-	| "BinaryExpression"
 	| "Literal"
 	| "Property"
+	/* Declaration */
+	| "LambdaFunctionDecl"
+	| "FunctionDeclaration"
+	| "VariableDeclaration"
+	| "UseDeclaration"
+	| "UseSpecifier"
+	| "UseDefaultSpecifier"
+	/* expr */
+	| "BinaryExpression"
 	| "ArrayExpression"
 	| "ObjectExpression"
 	| "MemberExpression"
 	| "CallExpression"
-	| "BlockStatement"
-	| "FunctionDeclaration"
-	| "ReturnStatement"
-	| "LambdaFunctionDecl"
-	| "VariableDeclaration"
-	| "ExpressionStatement"
 	| "AssignmentExpression"
 	| "CompareExpression"
 	| "EqualExpression"
 	| "TernayExpression"
 	| "RangeExpression"
 	| "IterableExpression"
+	| "RunStatement"
+	| "ToExpression"
+	/* stmt */
+	| "WaitStatement"
+	| "TaskStatement"
+	| "BlockStatement"
+	| "ReturnStatement"
+	| "ExpressionStatement"
 	| "IfStatement"
 	| "ForStatement"
 	| "SwitchStmtement"
 	| "CaseBlockStatement"
 	| "DefaultCaseBlockStatement"
-	| "UseDeclaration"
-	| "ExposeStmtement"
-	| "UseSpecifier"
-	| "UseDefaultSpecifier";
+	| "ExposeStmtement";
 
 export interface Node {
 	type: NodeType;
@@ -42,11 +49,13 @@ export interface Literal extends Expr {
 	type: "Literal";
 }
 
-export interface ExposeStmt extends Node {
-	body: Expr;
-	specifiers: Expr[];
-	type: "ExposeStmtement";
+export interface Property extends Node {
+	key: Literal;
+	value: Expr;
+	type: "Property";
 }
+
+/* ================================== Declaration ================================== */
 
 export interface UseSpecifier extends Node {
 	remote: Literal;
@@ -65,28 +74,6 @@ export interface UseDecl extends Node {
 	specifiers: (UseSpecifier | UseDefaultSpecifier)[];
 }
 
-export interface BlockStmt extends Node {
-	body: Expr[];
-	type: "BlockStatement";
-}
-
-export interface CaseBlockStmt extends Node {
-	body: BlockStmt;
-	test: Expr;
-	type: "CaseBlockStatement";
-}
-
-export interface DefaultCaseBlockStmt extends Node {
-	body: BlockStmt;
-	test: Expr;
-	type: "DefaultCaseBlockStatement";
-}
-
-export interface ReturnStmt extends Node {
-	value: Expr;
-	type: "ReturnStatement";
-}
-
 export interface FunctionDecl extends Node {
 	id: Literal;
 	arguments: Expr[];
@@ -99,6 +86,14 @@ export interface LambdaFunctionDecl extends Node {
 	body: BlockStmt;
 	type: "LambdaFunctionDecl";
 }
+
+export interface VariableDecl extends Node {
+	id: Literal;
+	value: Expr;
+	type: "VariableDeclaration";
+}
+
+/* ================================== Expr ================================== */
 
 export interface RangeExpr extends Expr {
 	start: Expr;
@@ -141,50 +136,6 @@ export interface TernaryExpr extends Expr {
 	type: "TernayExpression";
 }
 
-export interface ProgramStmt extends Node {
-	body: Expr[];
-	type: "Program";
-}
-
-export interface VariableDecl extends Node {
-	id: Literal;
-	value: Expr;
-	type: "VariableDeclaration";
-}
-
-export interface IfStmt extends Node {
-	test: Expr;
-	consequent: BlockStmt;
-	alternate?: BlockStmt;
-	type: "IfStatement";
-}
-
-export interface ForStmt extends Node {
-	init: Expr;
-	value?: Expr;
-	range: RangeExpr;
-	update: Expr;
-	body: BlockStmt;
-	type: "ForStatement";
-}
-
-export interface SwitchStmt extends Node {
-	test: Expr;
-	cases: (DefaultCaseBlockStmt | CaseBlockStmt)[];
-	type: "SwitchStmtement";
-}
-
-export interface ExpressionStmt extends Node {
-	expression: Expr;
-	type: "ExpressionStatement";
-}
-
-export interface Property extends Node {
-	key: Literal;
-	value: Expr;
-	type: "Property";
-}
-
 export interface ObjectExpr extends Node {
 	properties: Property[];
 	type: "ObjectExpression";
@@ -215,4 +166,86 @@ export interface BinaryExpr extends Expr {
 	operator: Token;
 }
 
-/*  */
+export interface ToExpr extends Expr {
+	body: BlockStmt;
+	arguments: Expr[];
+	type: "ToExpression";
+}
+
+/* ================================== Stmt ================================== */
+
+export interface RunStmt extends Expr {
+	callee: CallExpr;
+	to: ToExpr[];
+	type: "RunStatement";
+}
+
+export interface ExposeStmt extends Node {
+	body: Expr;
+	specifiers: Expr[];
+	type: "ExposeStmtement";
+}
+
+export interface BlockStmt extends Node {
+	body: Expr[];
+	type: "BlockStatement";
+}
+
+export interface CaseBlockStmt extends Node {
+	body: BlockStmt;
+	test: Expr;
+	type: "CaseBlockStatement";
+}
+
+export interface DefaultCaseBlockStmt extends Node {
+	body: BlockStmt;
+	test: Expr;
+	type: "DefaultCaseBlockStatement";
+}
+
+export interface ReturnStmt extends Node {
+	value: Expr;
+	type: "ReturnStatement";
+}
+
+export interface ProgramStmt extends Node {
+	body: Expr[];
+	type: "Program";
+}
+
+export interface IfStmt extends Node {
+	test: Expr;
+	consequent: BlockStmt;
+	alternate?: BlockStmt;
+	type: "IfStatement";
+}
+
+export interface ForStmt extends Node {
+	init: Expr;
+	value?: Expr;
+	range: RangeExpr;
+	update: Expr;
+	body: BlockStmt;
+	type: "ForStatement";
+}
+
+export interface SwitchStmt extends Node {
+	test: Expr;
+	cases: (DefaultCaseBlockStmt | CaseBlockStmt)[];
+	type: "SwitchStmtement";
+}
+
+export interface ExpressionStmt extends Node {
+	expression: Expr;
+	type: "ExpressionStatement";
+}
+
+export interface TaskStmt extends Node {
+	fn: FunctionDecl;
+	type: "TaskStatement";
+}
+
+export interface WaitStmt extends Node {
+	type: "WaitStatement";
+	async: RunStmt;
+}

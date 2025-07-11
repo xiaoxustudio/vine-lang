@@ -1,6 +1,6 @@
 import { Token } from "@/keywords";
 import { Literal } from "@/node";
-import { isNilLiteral, isNil, isBuilInObject, FunctionTag } from "@/utils";
+import { isNilLiteral, isNil, isBuilInObject, isFunction } from "@/utils";
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 
@@ -12,7 +12,7 @@ const print = (args: Token[]) => {
 			? "\x1b[36mnil\x1b[0m"
 			: isBuilInObject(output)
 			? builInObjectToString(output)
-			: output?.type === FunctionTag.FN || typeof output === "function"
+			: isFunction(output)
 			? "\x1b[36m[[Fn]]\x1b[0m"
 			: output;
 	};

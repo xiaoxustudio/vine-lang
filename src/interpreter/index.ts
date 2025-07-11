@@ -29,6 +29,10 @@ import {
 	UseDefaultSpecifier,
 	UseSpecifier,
 	TernaryExpr,
+	TaskStmt,
+	RunStmt,
+	ToExpr,
+	WaitStmt,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
@@ -37,134 +41,7 @@ import toRealValue from "@/utils/toRealValue";
 import Parser from "@/parser";
 import { tokenlize } from "@/token";
 import { FunctionTag } from "@/utils";
-
-export class TokenUnit {
-	_token: Token;
-	constructor(token: Token) {
-		this._token = token;
-	}
-	vaildBaseType(token: Token) {
-		if (typeof token !== "object") return token;
-		const baseType = [TokenType.number, TokenType.string, TokenType.boolean];
-		const isBase = baseType.includes(token.type);
-		if (!isBase)
-			throw new Error(`Unknown literal type: ${JSON.stringify(token)}`);
-		return isBase;
-	}
-	add(token: Token) {
-		this.vaildBaseType(token);
-		let left, right;
-		if (this._token.type == TokenType.number) {
-			left = Number(this._token.value);
-		} else {
-			left = this._token.value;
-		}
-		if (typeof token !== "object") {
-			right = token;
-		} else {
-			if (token.type == TokenType.number) {
-				right = Number(token.value);
-			} else {
-				right = token.value;
-			}
-		}
-
-		this._token = { ...this._token, value: left + right };
-		return this;
-	}
-	sub(token: Token) {
-		this.vaildBaseType(token);
-		let left, right;
-		if (this._token.type == TokenType.number) {
-			left = Number(this._token.value);
-		} else {
-			left = this._token.value;
-		}
-		if (typeof token !== "object") {
-			right = token;
-		} else {
-			if (token.type == TokenType.number) {
-				right = Number(token.value);
-			} else {
-				right = token.value;
-			}
-		}
-
-		this._token = { ...this._token, value: (left - right).toString() };
-		return this;
-	}
-	mul(token: Token) {
-		this.vaildBaseType(token);
-		let left, right;
-		if (this._token.type == TokenType.number) {
-			left = Number(this._token.value);
-		} else {
-			left = this._token.value;
-		}
-		if (typeof token !== "object") {
-			right = token;
-		} else {
-			if (token.type == TokenType.number) {
-				right = Number(token.value);
-			} else {
-				right = token.value;
-			}
-		}
-
-		this._token = { ...this._token, value: (left * right).toString() };
-		return this;
-	}
-	div(token: Token) {
-		this.vaildBaseType(token);
-		let left, right;
-		if (this._token.type == TokenType.number) {
-			left = Number(this._token.value);
-		} else {
-			left = this._token.value;
-		}
-		if (typeof token !== "object") {
-			right = token;
-		} else {
-			if (token.type == TokenType.number) {
-				right = Number(token.value);
-			} else {
-				right = token.value;
-			}
-		}
-		this._token = { ...this._token, value: (left / right).toString() };
-		return this;
-	}
-	logicOperate(operator: Token, rightToken: Literal) {
-		const left = toRealValue(this._token);
-		const right = toRealValue(rightToken);
-		const res = ((): boolean => {
-			switch (operator.value) {
-				case "==":
-					return left == right;
-				case "!=":
-					return left != right;
-				case ">":
-					return left > right;
-				case "<":
-					return left < right;
-				case ">=":
-					return left >= right;
-				case "<=":
-					return left >= right;
-			}
-		})();
-
-		this._token = {
-			...this._token,
-			type: TokenType.boolean,
-			value: res.toString(),
-		};
-		return this;
-	}
-	getToken() {
-		return this._token;
-	}
-}
+import TokenUnit from "@/utils/TokenUnit";
 
 export default class Interpreter {
 	private readonly _context: Environment;
@@ -184,16 +61,16 @@ export default class Interpreter {
 
 	interpretStmt(stmt: Node, env: Environment) {
 		switch (stmt.type) {
-			case "ExpressionStatement":
-				return this.interpretExpressionStatement(stmt as ExpressionStmt, env);
 			case "VariableDeclaration":
 				return this.interpretVariableDeclaration(stmt as VariableDecl, env);
 			case "FunctionDeclaration":
 				return this.interpretFunctionDeclaration(stmt as FunctionDecl, env);
+			case "UseDeclaration":
+				return this.interpretUseDeclaration(stmt as UseDecl, env);
 			case "CallExpression":
 				return this.interpretCallExpression(stmt as CallExpr, env);
-			case "BlockStatement":
-				return this.interpretBlockStatement(stmt as BlockStmt, env);
+			case "MemberExpression":
+				return this.interpretMemberExpression(stmt as MemberExpr, env);
 			case "AssignmentExpression":
 				return this.interpretAssignmentExpression(stmt as AssignmentExpr, env);
 			case "IfStatement":
@@ -204,15 +81,53 @@ export default class Interpreter {
 				return this.interpretSwitchStatement(stmt as SwitchStmt, env);
 			case "ReturnStatement":
 				return this.interpretReturnStatement(stmt as ReturnStmt, env);
-			case "MemberExpression":
-				return this.interpretMemberExpression(stmt as MemberExpr, env);
-			case "UseDeclaration":
-				return this.interpretUseDeclaration(stmt as UseDecl, env);
+			case "BlockStatement":
+				return this.interpretBlockStatement(stmt as BlockStmt, env);
+			case "ExpressionStatement":
+				return this.interpretExpressionStatement(stmt as ExpressionStmt, env);
 			case "ExposeStmtement":
 				return this.interpretExposeStatement(stmt as ExposeStmt, env);
+			case "TaskStatement":
+				return this.interpretTaskStatement(stmt as TaskStmt, env);
+			case "RunStatement":
+				return this.interpretRunStatement(stmt as RunStmt, env);
+			case "WaitStatement":
+				return this.interpretWaitStatement(stmt as WaitStmt, env);
 			default:
 				return this.interpretExpression(stmt as ExpressionStmt, env);
 		}
+	}
+
+	async interpretWaitStatement(stmt: WaitStmt, env: Environment) {
+		const wait = await this.interpretRunStatement(stmt.async, env);
+		return wait;
+	}
+
+	async interpretRunStatement(stmt: RunStmt, env: Environment) {
+		// 异步执行
+		return await Promise.resolve().then(async () => {
+			if (stmt?.to) {
+				// @ts-ignore
+				const res = await this.interpretStmt(stmt.callee, env);
+				let resVal;
+				for (let i of stmt.to) {
+					const context = new Environment(env);
+					context.declareVariable((i.arguments as any)?.[0], res);
+					resVal = await this.interpretStmt(i, context);
+				}
+				return resVal;
+			} else {
+				return await this.interpretStmt(stmt.callee, env);
+			}
+		});
+	}
+
+	interpretTaskStatement(stmt: TaskStmt, env: Environment) {
+		return this.interpretFunctionDeclaration(
+			stmt.fn,
+			env,
+			FunctionTag.FN_ASYNC
+		);
 	}
 
 	interpretExposeStatement(stmt: ExposeStmt, env: Environment) {
@@ -356,27 +271,41 @@ export default class Interpreter {
 		}
 		return returnVal;
 	}
-	interpretFunctionDeclaration(stmt: FunctionDecl, env: Environment) {
+	interpretFunctionDeclaration(
+		stmt: FunctionDecl,
+		env: Environment,
+		type = FunctionTag.FN
+	) {
 		const body = stmt.body;
 		const args_out = stmt.arguments;
 		const fn = (args: Expr[]) => {
 			const context = new Environment(env);
-			for (const i in args) {
-				if (args_out[i]) context.declareVariable(args_out[i] as any, args[i]);
+			if (args) {
+				if (!Array.isArray(args)) {
+					context.declareVariable(args_out?.[0] as any, args);
+				} else {
+					for (const i in args) {
+						if (args_out[i])
+							context.declareVariable(args_out[i] as any, args[i]);
+					}
+				}
 			}
 			return this.interpretBlockStatement(body, context);
 		};
 		Object.defineProperty(fn, "type", {
-			value: FunctionTag.FN,
+			value: type,
 			enumerable: true,
 			writable: false,
 			configurable: false,
 		});
 		env.declareVariable(stmt.id, fn);
 	}
-	interpretCallExpression(stmt: CallExpr, env: Environment) {
-		const callee = this.interpretExpression(stmt.callee, env);
-		const args = stmt.arguments.map(arg => this.interpretExpression(arg, env));
+
+	async interpretCallExpression(stmt: CallExpr, env: Environment) {
+		const callee = await this.interpretExpression(stmt.callee, env);
+		const args = await Promise.all(
+			stmt.arguments.map(async arg => await this.interpretExpression(arg, env))
+		);
 		let res: any;
 		try {
 			res = typeof callee === "function" ? callee.apply(env, args) : callee;
@@ -411,9 +340,9 @@ export default class Interpreter {
 		}
 	}
 	interpretExpressionStatement(stmt: ExpressionStmt, env: Environment) {
-		this.interpretExpression(stmt.expression, env);
+		return this.interpretExpression(stmt.expression, env);
 	}
-	interpretExpression(expression: Expr, env: Environment) {
+	async interpretExpression(expression: Expr, env: Environment) {
 		switch (expression.type) {
 			case "CallExpression": {
 				const e = expression as CallExpr;
@@ -432,8 +361,8 @@ export default class Interpreter {
 			}
 			case "BinaryExpression": {
 				const e = expression as BinaryExpr;
-				const left = this.interpretExpression(e.left, env);
-				const right = this.interpretExpression(e.right, env);
+				let left = await this.interpretExpression(e.left, env);
+				let right = await this.interpretExpression(e.right, env);
 
 				const tk_unit = new TokenUnit(left);
 
@@ -523,6 +452,23 @@ export default class Interpreter {
 			case "UseSpecifier": {
 				const e = expression as UseSpecifier;
 				return { remote: e.remote, local: e.local };
+			}
+			case "ToExpression": {
+				const e = expression as ToExpr;
+				try {
+					const res = await this.interpretBlockStatement(e.body, env);
+					return res;
+				} catch (e) {
+					throw new Error(`ToExpression error: ${e}`);
+				}
+			}
+			case "RunStatement": {
+				return this.interpretRunStatement(expression as RunStmt, env);
+			}
+			case "WaitStatement": {
+				const e = expression as WaitStmt;
+				const res = await this.interpretWaitStatement(e, env);
+				return res;
 			}
 			default:
 				throw new Error(

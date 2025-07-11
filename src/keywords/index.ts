@@ -21,6 +21,10 @@ export enum TokenType {
 	expose,
 	pick,
 	as,
+	task, // signifies a task (like async function)
+	wait, // wait for a task to finish (like await)
+	to, // (like then)
+	run, // used to carry out the tasks we have defined
 	if,
 	else,
 	let,
@@ -39,7 +43,7 @@ export enum TokenType {
 }
 
 export type JSRuntimeFn = (args?: any) => void;
-export type JSRuntimeClass = { new (...args: any[]): any }; 
+export type JSRuntimeClass = { new (...args: any[]): any };
 
 export interface Token {
 	type: TokenType;
@@ -57,6 +61,10 @@ export const Keywords = {
 	pick: TokenType.pick,
 	use: TokenType.use,
 	as: TokenType.as,
+	task: TokenType.task,
+	to: TokenType.to,
+	run: TokenType.run,
+	wait: TokenType.wait,
 	if: TokenType.if,
 	else: TokenType.else,
 	let: TokenType.let,

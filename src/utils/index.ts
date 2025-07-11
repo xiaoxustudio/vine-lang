@@ -25,8 +25,12 @@ export function isBuilInObject(expr: Token | Expr) {
 	return expr instanceof Environment || expr.type === TokenType.env;
 }
 
-export function isAsyncFunction(fn: Function) {
-	return Object.prototype.toString.call(fn) === "[object AsyncFunction]";
+export function isFunction(fn: any) {
+	return (
+		fn?.type === FunctionTag.FN ||
+		fn?.type === FunctionTag.FN_ASYNC ||
+		typeof fn === "function"
+	);
 }
 
 export function isInSideModule(_: Record<string, any>) {

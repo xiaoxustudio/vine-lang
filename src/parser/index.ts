@@ -20,12 +20,16 @@ import {
 	Property,
 	RangeExpr,
 	ReturnStmt,
+	RunStmt,
 	SwitchStmt,
+	TaskStmt,
 	TernaryExpr,
+	ToExpr,
 	UseDecl,
 	UseDefaultSpecifier,
 	UseSpecifier,
 	VariableDecl,
+	WaitStmt,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
@@ -98,6 +102,8 @@ export default class Parser {
 			case TokenType.comment:
 				this.eat();
 				return this.parseStatement();
+			case TokenType.task:
+				return this.parseTask();
 			case TokenType.let:
 				return this.parseLet();
 			case TokenType.if:
@@ -112,9 +118,54 @@ export default class Parser {
 				return this.parseReturn();
 			case TokenType.expose:
 				return this.parseExpose();
+			case TokenType.run:
+				return this.parseRun();
+			case TokenType.wait:
+				return this.parseWait();
 			default:
 				return this.parseExpression();
 		}
+	}
+
+	parseWait() {
+		this.match(TokenType.wait);
+		return {
+			type: "WaitStatement",
+			async: this.parseRun(),
+		} as WaitStmt;
+	}
+
+	parseTo() {
+		this.match(TokenType.to);
+		const args = this.parseArgs();
+		const body = this.parseBlock(true);
+		return { type: "ToExpression", arguments: args, body } as ToExpr;
+	}
+
+	parseRun() {
+		this.match(TokenType.run);
+		const callee = this.parseCall();
+		let to: ToExpr[] = [];
+		if (this.at().type === TokenType.to) {
+			while (this.at().type === TokenType.to) {
+				to.push(this.parseTo());
+			}
+			this.match(TokenType.end);
+		}
+		return {
+			type: "RunStatement",
+			callee,
+			to,
+		} as RunStmt;
+	}
+
+	parseTask() {
+		this.match(TokenType.task);
+		const fn = this.parseFunction();
+		return {
+			type: "TaskStatement",
+			fn,
+		} as TaskStmt;
 	}
 
 	parseExpose() {
@@ -622,6 +673,10 @@ export default class Parser {
 					body,
 					type: "LambdaFunctionDecl",
 				} as LambdaFunctionDecl;
+			case TokenType.run:
+				return this.parseRun();
+			case TokenType.wait:
+				return this.parseWait();
 			case TokenType.default:
 			case TokenType.case:
 				return this.parseSwitchCase();
