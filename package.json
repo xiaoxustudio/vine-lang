@@ -1,8 +1,9 @@
 {
 	"name": "vine-lang",
-	"version": "1.0.22",
+	"version": "1.0.23",
 	"description": "a language parser and runtime",
 	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"keywords": [
 		"utils",
 		"tokenlize",
