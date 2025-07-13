@@ -40,8 +40,9 @@ import mapToObject from "@/utils/mapToObject";
 import toRealValue from "@/utils/toRealValue";
 import Parser from "@/parser";
 import { tokenlize } from "@/token";
-import { FunctionTag } from "@/utils";
+import { BaseDataTag } from "@/utils";
 import TokenUnit from "@/utils/TokenUnit";
+import setObjectData from "@/utils/setObjectData";
 
 export default class Interpreter {
 	private readonly _context: Environment;
@@ -50,11 +51,11 @@ export default class Interpreter {
 		this._context = context;
 	}
 
-	interpret(expression: ProgramStmt) {
+	async interpret(expression: ProgramStmt) {
 		const body = expression.body;
 		let returnVal;
 		for (const stmt of body) {
-			returnVal = this.interpretStmt(stmt, this._context);
+			returnVal = await this.interpretStmt(stmt, this._context);
 		}
 		return returnVal;
 	}
@@ -126,7 +127,7 @@ export default class Interpreter {
 		return this.interpretFunctionDeclaration(
 			stmt.fn,
 			env,
-			FunctionTag.FN_ASYNC
+			BaseDataTag.FN_ASYNC
 		);
 	}
 
@@ -222,7 +223,7 @@ export default class Interpreter {
 		const value = stmt.value;
 		const range = this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
-		if (range.type === "range") {
+		if (range.type === BaseDataTag.RANGE) {
 			const step = range?.step.value === ".." ? 1 : Number(range[2].value);
 			const start = toRealValue(range.start);
 			const end = toRealValue(range.end);
@@ -274,7 +275,7 @@ export default class Interpreter {
 	interpretFunctionDeclaration(
 		stmt: FunctionDecl,
 		env: Environment,
-		type = FunctionTag.FN
+		type = BaseDataTag.FN
 	) {
 		const body = stmt.body;
 		const args_out = stmt.arguments;
@@ -292,12 +293,7 @@ export default class Interpreter {
 			}
 			return this.interpretBlockStatement(body, context);
 		};
-		Object.defineProperty(fn, "type", {
-			value: type,
-			enumerable: true,
-			writable: false,
-			configurable: false,
-		});
+		setObjectData(fn, "type", type); // 设置类型
 		env.declareVariable(stmt.id, fn);
 	}
 
@@ -314,8 +310,8 @@ export default class Interpreter {
 		}
 		return res;
 	}
-	interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
-		const value = this.interpretExpression(stmt.value, env);
+	async interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
+		const value = await this.interpretExpression(stmt.value, env);
 		env.declareVariable(stmt.id, value);
 	}
 	interpretMemberExpression(e: MemberExpr, env: Environment) {
@@ -384,16 +380,21 @@ export default class Interpreter {
 				for (const target of e.items) {
 					const key = target.key;
 					key.value.type = TokenType.index;
-					obj.set(key, this.interpretExpression(target.value, env));
+					obj.set(key, await this.interpretExpression(target.value, env));
 				}
+				setObjectData(obj, "type", BaseDataTag.ARRAY); // 设置类型
 				return obj;
 			}
 			case "ObjectExpression": {
 				const e = expression as ObjectExpr;
 				const obj = new Map<Literal, Expr>();
 				for (const target of e.properties) {
-					obj.set(target.key, this.interpretExpression(target.value, env));
+					obj.set(
+						target.key,
+						await this.interpretExpression(target.value, env)
+					);
 				}
+				setObjectData(obj, "type", BaseDataTag.OBJECT); // 设置类型
 				return obj;
 			}
 			case "CompareExpression": {
@@ -425,11 +426,11 @@ export default class Interpreter {
 				const e = expression as RangeExpr;
 				const start = this.interpretExpression(e.start, env);
 				const end = this.interpretExpression(e.end, env);
-				return { type: "range", start, end, step: e.step };
+				return { type: BaseDataTag.RANGE, start, end, step: e.step };
 			}
 			case "LambdaFunctionDecl": {
 				const e = expression as LambdaFunctionDecl;
-				return (args: Expr[]) => {
+				const fn = (args: Expr[]) => {
 					const context = new Environment(env);
 					for (const i in args) {
 						context.declareVariable(e.arguments[i] as any, args[i]);
@@ -437,6 +438,8 @@ export default class Interpreter {
 					const v = this.interpretBlockStatement(e.body, context);
 					return v;
 				};
+				setObjectData(fn, "type", BaseDataTag.FN_LAMBDA);
+				return fn;
 			}
 			case "MemberExpression": {
 				return this.interpretMemberExpression(expression as MemberExpr, env);

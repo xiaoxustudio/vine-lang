@@ -3,9 +3,13 @@ import { Token, TokenType } from "@/keywords";
 import Environment from "@/environment";
 import { ModuleTag } from "@/libs/package";
 
-export const FunctionTag = {
+export const BaseDataTag = {
+	OBJECT: Symbol("object"),
+	ARRAY: Symbol("array"),
+	RANGE: Symbol("range"),
 	FN: Symbol("function"),
 	FN_ASYNC: Symbol("function_async"),
+	FN_LAMBDA: Symbol("function_lambda"),
 };
 
 export function isToken(expr: Expr) {
@@ -27,8 +31,8 @@ export function isBuilInObject(expr: Token | Expr) {
 
 export function isFunction(fn: any) {
 	return (
-		fn?.type === FunctionTag.FN ||
-		fn?.type === FunctionTag.FN_ASYNC ||
+		fn?.type === BaseDataTag.FN ||
+		fn?.type === BaseDataTag.FN_ASYNC ||
 		typeof fn === "function"
 	);
 }

@@ -13,10 +13,10 @@ class Vine {
 		this.interpreter = new Interpreter(new Environment());
 		this.env = new Environment();
 	}
-	run(code: string) {
+	async run(code: string) {
 		this.parser.pushStack(tokenlize(code));
 		const program = this.parser.parse();
-		return toRealValue(this.interpreter.interpret(program));
+		return toRealValue(await this.interpreter.interpret(program));
 	}
 }
 

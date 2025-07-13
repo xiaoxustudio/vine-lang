@@ -1,6 +1,12 @@
 import { Token } from "@/keywords";
 import { Literal } from "@/node";
-import { isNilLiteral, isNil, isBuilInObject, isFunction } from "@/utils";
+import {
+	isNilLiteral,
+	isNil,
+	isBuilInObject,
+	isFunction,
+	BaseDataTag,
+} from "@/utils";
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 
@@ -17,7 +23,7 @@ const print = (args: Token[]) => {
 			: output;
 	};
 	// 原生js数据类型
-	if (args instanceof Map) {
+	if (args instanceof Map && (args as any)?.type !== BaseDataTag.ARRAY) {
 		const entries = Object.fromEntries(args);
 		console.log(entries);
 		return;
