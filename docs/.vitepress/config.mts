@@ -61,6 +61,10 @@ export default defineConfig({
 		socialLinks: [
 			{ icon: "github", link: "https://github.com/xiaoxustudio/vine-lang" },
 		],
+		footer: {
+			copyright: "Copyright © 2025-present xuran",
+			message: "MIT Licensed",
+		},
 	},
 	vite: {
 		server: {
