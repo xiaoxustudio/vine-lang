@@ -296,7 +296,7 @@ export default class Interpreter {
 	async interpretCallExpression(stmt: CallExpr, env: Environment) {
 		const callee = await this.interpretExpression(stmt.callee, env);
 		const args = await Promise.all(
-			stmt.arguments.map(async arg => await this.interpretExpression(arg, env))
+			stmt.arguments.map(async arg => this.interpretExpression(arg, env))
 		);
 		let res: any;
 		try {
@@ -310,12 +310,13 @@ export default class Interpreter {
 		const value = await this.interpretExpression(stmt.value, env);
 		env.declareVariable(stmt.id, value);
 	}
-	interpretMemberExpression(e: MemberExpr, env: Environment) {
-		const object = this.interpretExpression(e.object, env);
+	async interpretMemberExpression(e: MemberExpr, env: Environment) {
+		const object = await this.interpretExpression(e.object, env);
 		const prop_val = toRealValue(e.property as Literal);
 		if (object instanceof Map) {
-			if (!Object.fromEntries(object)["[object Object]"]) {
-				return Object.fromEntries(object)[prop_val];
+			const fromEntries = Object.fromEntries(object);
+			if (!fromEntries["[object Object]"]) {
+				return fromEntries[prop_val];
 			} else {
 				const targetObject = mapToObject(object, toRealValue);
 				return targetObject[prop_val];
@@ -331,6 +332,7 @@ export default class Interpreter {
 			return object[prop_val];
 		}
 	}
+
 	interpretExpressionStatement(stmt: ExpressionStmt, env: Environment) {
 		return this.interpretExpression(stmt.expression, env);
 	}
@@ -385,10 +387,8 @@ export default class Interpreter {
 				const e = expression as ObjectExpr;
 				const obj = new Map<Literal, Expr>();
 				for (const target of e.properties) {
-					obj.set(
-						target.key,
-						await this.interpretExpression(target.value, env)
-					);
+					const key = await this.interpretExpression(target.key, env);
+					obj.set(key, await this.interpretExpression(target.value, env));
 				}
 				setObjectData(obj, "type", BaseDataTag.OBJECT); // 设置类型
 				return obj;
@@ -438,7 +438,10 @@ export default class Interpreter {
 				return fn;
 			}
 			case "MemberExpression": {
-				return this.interpretMemberExpression(expression as MemberExpr, env);
+				return await this.interpretMemberExpression(
+					expression as MemberExpr,
+					env
+				);
 			}
 			case "UseDefaultSpecifier": {
 				const e = expression as UseDefaultSpecifier;

@@ -4,9 +4,10 @@ import { isInSideModule } from "@/utils";
 import LiteralFn from "@/utils/LiteralFn";
 import toRealValue from "@/utils/toRealValue";
 import UseEnvFn, { TokenExEnvironment } from "@/utils/UseEnvFn";
-import { VineIO, Global } from "@/libs";
+import { VineIO, Global, VinePath } from "@/libs";
 
 export const ModuleList = {
+	"vine:path": VinePath,
 	"vine:io": VineIO,
 	"vine:global": Global,
 };

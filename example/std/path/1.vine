@@ -1,0 +1,9 @@
+use "vine:path"
+
+let dirPath = path.dir()
+let filePath = path.file()
+let p = path.resolve(dirPath,"1.txt")
+
+print(dirPath)
+print(filePath)
+print(p)
