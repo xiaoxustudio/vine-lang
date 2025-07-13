@@ -124,11 +124,7 @@ export default class Interpreter {
 	}
 
 	interpretTaskStatement(stmt: TaskStmt, env: Environment) {
-		return this.interpretFunctionDeclaration(
-			stmt.fn,
-			env,
-			BaseDataTag.FN_ASYNC
-		);
+		return this.interpretFunctionDeclaration(stmt.fn, env, BaseDataTag.FN_TASK);
 	}
 
 	interpretExposeStatement(stmt: ExposeStmt, env: Environment) {

@@ -8,7 +8,7 @@ export const BaseDataTag = {
 	ARRAY: Symbol("array"),
 	RANGE: Symbol("range"),
 	FN: Symbol("function"),
-	FN_ASYNC: Symbol("function_async"),
+	FN_TASK: Symbol("function_async"),
 	FN_LAMBDA: Symbol("function_lambda"),
 };
 
@@ -32,7 +32,7 @@ export function isBuilInObject(expr: Token | Expr) {
 export function isFunction(fn: any) {
 	return (
 		fn?.type === BaseDataTag.FN ||
-		fn?.type === BaseDataTag.FN_ASYNC ||
+		fn?.type === BaseDataTag.FN_TASK ||
 		typeof fn === "function"
 	);
 }

@@ -7,3 +7,4 @@ run a()
 print("全局")
 
 
+print(a)

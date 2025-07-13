@@ -1,15 +1,18 @@
 import Environment from "@/environment";
 import { Token, TokenType } from "@/keywords";
 import { Expr } from "@/node";
-import { isPromise } from ".";
+import { BaseDataTag, isFunction, isPromise } from ".";
 
 export default function builInObjectToString(expr: Token | Expr) {
 	const str = (s: string, code = 90) => `\x1b[${code}m${s}\x1b[0m`;
 	if (expr instanceof Environment || expr?.type === TokenType.env) {
 		return str("[[Environment]]", 94);
-	}
-	if (isPromise(expr)) {
+	} else if (isPromise(expr)) {
 		return str("[[Task]]", 94);
+	} else if (isFunction(expr)) {
+		if (expr.type === (BaseDataTag.FN_TASK as any))
+			return str("[[TaskFn]]", 94);
+		return str("[[Fn]]", 94);
 	}
 	switch (typeof expr) {
 		case "number":

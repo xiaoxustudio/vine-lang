@@ -16,10 +16,8 @@ const print = (args: Token[]) => {
 		const output = toRaal ? toRealValue(e as unknown as Literal) : e;
 		return isNilLiteral(e as unknown as Literal) && isNil(output)
 			? "\x1b[36mnil\x1b[0m"
-			: isBuilInObject(output)
+			: isBuilInObject(output) || isFunction(output)
 			? builInObjectToString(output)
-			: isFunction(output)
-			? "\x1b[36m[[Fn]]\x1b[0m"
 			: output;
 	};
 	// 原生js数据类型
