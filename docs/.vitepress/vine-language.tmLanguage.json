@@ -1,0 +1,221 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "vine",
+	"scopeName": "source.vine",
+	"fileTypes": [".vine"],
+	"injectionSelector": "L:source.vine",
+	"patterns": [
+		{ "include": "#keywords" },
+		{ "include": "#comments" },
+		{ "include": "#strings" },
+		{ "include": "#numbers" },
+		{ "include": "#booleans" },
+		{ "include": "#other-global-keywords" },
+		{ "include": "#functions" },
+		{ "include": "#call_functions" },
+		{ "include": "#variables" },
+		{ "include": "#operators" },
+		{ "include": "#control-flow" }
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.vine",
+					"match": "\\b(let|fn|if|else|end|use|return|for|in|as|expose|switch|case|break|default|pick|task|run)\\b"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.vine",
+					"match": "#.*$"
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.vine",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"name": "constant.character.escape.vine",
+							"match": "\\\\."
+						}
+					]
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"name": "constant.numeric.vine",
+					"match": "\\b(\\d+(\\.\\d+)?)\\b"
+				}
+			]
+		},
+		"booleans": {
+			"patterns": [
+				{
+					"name": "constant.language.boolean.vine",
+					"match": "\\b(true|false)\\b"
+				}
+			]
+		},
+		"other-global-keywords": {
+			"patterns": [
+				{
+					"name": "constant.language.null.vine",
+					"match": "\\bnil\\b"
+				},
+				{
+					"name": "constant.language.nan.vine",
+					"match": "\\bNaN\\b"
+				}
+			]
+		},
+		"functions": {
+			"patterns": [
+				{
+					"name": "entity.name.function.vine",
+					"match": "(?<=fn\\s+)[a-zA-Z_][a-zA-Z0-9_]*"
+				},
+				{
+					"name": "support.function.builtin.vine",
+					"match": "\\b(print|len|type|range|map|filter|reduce)\\b"
+				}
+			]
+		},
+		"call_functions": {
+			"name": "meta.function-call.vine",
+			"begin": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\()",
+			"end": "\\)",
+			"beginCaptures": {
+				"1": { "name": "entity.name.function.call.vine" },
+				"2": { "name": "punctuation.definition.parameters.begin.vine" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.definition.parameters.end.vine" }
+			},
+			"patterns": [
+				{ "include": "#strings" },
+				{ "include": "#numbers" },
+				{ "include": "#booleans" },
+				{ "include": "#variables" },
+				{ "include": "#call_functions" }
+			]
+		},
+		"variables": {
+			"patterns": [
+				{
+					"name": "variable.other.readwrite.vine",
+					"match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+				}
+			]
+		},
+		"operators": {
+			"patterns": [
+				{
+					"name": "keyword.operator.assignment.vine",
+					"match": "="
+				},
+				{
+					"name": "keyword.operator.comparison.vine",
+					"match": "==|!=|>|<|>=|<="
+				},
+				{
+					"name": "keyword.operator.arithmetic.vine",
+					"match": "\\+|-|\\*|/|%|\\^"
+				},
+				{
+					"name": "keyword.operator.logical.vine",
+					"match": "&&|\\|\\||!"
+				},
+				{
+					"name": "keyword.operator.punctuation.vine",
+					"match": ":|,|;"
+				},
+				{
+					"name": "punctuation.parenthesis.begin.vine",
+					"match": "\\("
+				},
+				{
+					"name": "punctuation.parenthesis.end.vine",
+					"match": "\\)"
+				},
+				{
+					"name": "punctuation.brace.begin.vine",
+					"match": "\\{"
+				},
+				{
+					"name": "punctuation.brace.end.vine",
+					"match": "\\}"
+				},
+				{
+					"name": "punctuation.bracket.begin.vine",
+					"match": "\\["
+				},
+				{
+					"name": "punctuation.bracket.end.vine",
+					"match": "\\]"
+				}
+			]
+		},
+		"control-flow": {
+			"patterns": [
+				{
+					"name": "keyword.control.conditional.vine",
+					"match": "\\b(if|else|switch|case|default)\\b"
+				},
+				{
+					"name": "keyword.control.loop.vine",
+					"match": "\\b(for|in|break)\\b"
+				},
+				{
+					"name": "keyword.control.return.vine",
+					"match": "\\breturn\\b"
+				},
+				{
+					"begin": "\\b(if)\\b",
+					"end": "\\bend\\b",
+					"name": "meta.block.control.conditional.vine",
+					"beginCaptures": {
+						"1": { "name": "keyword.control.conditional.vine" }
+					},
+					"endCaptures": {
+						"0": { "name": "keyword.control.block.end.vine" }
+					},
+					"patterns": [{ "include": "$self" }]
+				},
+				{
+					"begin": "\\b(fn)\\b\\s*([a-zA-Z_][a-zA-Z0-9_]*)?",
+					"end": "\\bend\\b",
+					"name": "meta.block.function.vine",
+					"beginCaptures": {
+						"1": { "name": "keyword.control.function.vine" },
+						"2": { "name": "entity.name.function.vine" }
+					},
+					"endCaptures": {
+						"0": { "name": "keyword.control.block.end.vine" }
+					},
+					"patterns": [{ "include": "$self" }]
+				},
+				{
+					"begin": "\\b(for)\\b",
+					"end": "\\bend\\b",
+					"name": "meta.block.loop.vine",
+					"beginCaptures": {
+						"1": { "name": "keyword.control.loop.vine" }
+					},
+					"endCaptures": {
+						"0": { "name": "keyword.control.block.end.vine" }
+					},
+					"patterns": [{ "include": "$self" }]
+				}
+			]
+		}
+	}
+}

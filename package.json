@@ -1,45 +1,49 @@
 {
-	"name": "vine-lang",
-	"version": "1.0.23",
-	"description": "a language parser and runtime",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"keywords": [
-		"utils",
-		"tokenlize",
-		"parser",
-		"ast",
-		"language"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/xiaoxustudio/vine-lang.git"
-	},
-	"scripts": {
-		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && tsc-alias -p tsconfig.json",
-		"dev": "pnpm prebuild && pnpm prerun",
-		"build": "pnpm prebuild",
-		"exebuild": "pnpm prebuild && node ./scripts/build.js",
-		"ipt": "pnpm dev ipt",
-		"repl": "pnpm dev repl",
-		"prerun": "node dist/index.js"
-	},
-	"files": [
-		"dist"
-	],
-	"author": "xuran",
-	"license": "MIT",
-	"packageManager": "pnpm@10.13.0",
-	"devDependencies": {
-		"@rollup/plugin-alias": "^5.1.1",
-		"@rollup/plugin-commonjs": "^28.0.6",
-		"@rollup/plugin-node-resolve": "^16.0.1",
-		"@rollup/plugin-typescript": "^12.1.4",
-		"@types/node": "^22.15.29",
-		"@yao-pkg/pkg": "^6.5.1",
-		"rollup": "^4.41.1",
-		"rollup-plugin-typescript2": "^0.36.0",
-		"tsc-alias": "^1.8.16",
-		"typescript": "^5.8.3"
-	}
+  "name": "vine-lang",
+  "version": "1.0.23",
+  "description": "a language parser and runtime",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "utils",
+    "tokenlize",
+    "parser",
+    "ast",
+    "language"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaoxustudio/vine-lang.git"
+  },
+  "scripts": {
+    "prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && tsc-alias -p tsconfig.json",
+    "dev": "pnpm prebuild && pnpm prerun",
+    "build": "pnpm prebuild",
+    "exebuild": "pnpm prebuild && node ./scripts/build.js",
+    "ipt": "pnpm dev ipt",
+    "repl": "pnpm dev repl",
+    "prerun": "node dist/index.js",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "xuran",
+  "license": "MIT",
+  "packageManager": "pnpm@10.13.0",
+  "devDependencies": {
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/node": "^22.15.29",
+    "@yao-pkg/pkg": "^6.5.1",
+    "rollup": "^4.41.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.8.3",
+    "vitepress": "^1.6.3"
+  }
 }
