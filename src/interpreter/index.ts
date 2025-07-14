@@ -43,9 +43,11 @@ import { tokenlize } from "@/token";
 import { BaseDataTag } from "@/utils";
 import TokenUnit from "@/utils/TokenUnit";
 import setObjectData from "@/utils/setObjectData";
+import { ErrorStackManager, ErrorStack } from "@/error";
 
 export default class Interpreter {
 	private readonly _context: Environment;
+	private errStackManager = new ErrorStackManager();
 
 	constructor(context: any) {
 		this._context = context;
@@ -54,8 +56,12 @@ export default class Interpreter {
 	async interpret(expression: ProgramStmt) {
 		const body = expression.body;
 		let returnVal;
-		for (const stmt of body) {
-			returnVal = await this.interpretStmt(stmt, this._context);
+		try {
+			for (const stmt of body) {
+				returnVal = await this.interpretStmt(stmt, this._context);
+			}
+		} catch {
+			this.errStackManager.throwAll();
 		}
 		return returnVal;
 	}
@@ -252,7 +258,9 @@ export default class Interpreter {
 				return this.interpretStmt(stmt.alternate, env);
 			}
 		}
-		throw new Error("Condition must be a boolean");
+		this.errStackManager
+			.addError(new ErrorStack("Condition must be a boolean", env))
+			.throw();
 	}
 
 	interpretAssignmentExpression(stmt: AssignmentExpr, env: Environment) {
@@ -302,7 +310,11 @@ export default class Interpreter {
 		try {
 			res = typeof callee === "function" ? callee.apply(env, args) : callee;
 		} catch (e) {
-			throw new Error(`CallExpression error: ${e}`);
+			this.errStackManager
+				.addError(
+					new ErrorStack(`CallExpression error: ${e}`, env, stmt.callee.value)
+				)
+				.throw();
 		}
 		return res;
 	}
@@ -344,12 +356,18 @@ export default class Interpreter {
 			}
 			case "Literal": {
 				const e = expression as Literal;
-				if (e.value.type === TokenType.identifier) {
-					const val = env.getVariable(e) as any; // 可能拿到的是Literal
-					if (val.type === "Literal") {
-						return val.value;
+				try {
+					if (e.value.type === TokenType.identifier) {
+						const val = env.getVariable(e) as any; // 可能拿到的是Literal
+						if (val.type === "Literal") {
+							return val.value;
+						}
+						return val;
 					}
-					return val;
+				} catch (err) {
+					this.errStackManager
+						.addError(new ErrorStack(`Literal error: ${err}`, env, e))
+						.throw();
 				}
 				return e.value;
 			}
@@ -408,9 +426,18 @@ export default class Interpreter {
 					} else if (e.alternate) {
 						return this.interpretStmt(e.alternate, env);
 					}
-					throw new Error("Condition must have a consequent or alternate");
+					this.errStackManager
+						.addError(
+							new ErrorStack(
+								`Condition must have a consequent or alternate`,
+								env
+							)
+						)
+						.throw();
 				}
-				throw new Error("Condition must be a boolean");
+				this.errStackManager
+					.addError(new ErrorStack(`Condition must be a boolean`, env))
+					.throw();
 			}
 			case "EqualExpression": {
 				const e = expression as EqualExpr;
@@ -447,7 +474,11 @@ export default class Interpreter {
 				const e = expression as UseDefaultSpecifier;
 				const val = e.local;
 				if (e.local.type !== "Literal") {
-					throw new Error("UseDefaultSpecifier local must be a literal");
+					this.errStackManager
+						.addError(
+							new ErrorStack("UseDefaultSpecifier local must be a literal", env)
+						)
+						.throw();
 				}
 				return val;
 			}
@@ -460,8 +491,10 @@ export default class Interpreter {
 				try {
 					const res = await this.interpretBlockStatement(e.body, env);
 					return res;
-				} catch (e) {
-					throw new Error(`ToExpression error: ${e}`);
+				} catch (err) {
+					this.errStackManager
+						.addError(new ErrorStack(`ToExpression error: ${err}`, env))
+						.throw();
 				}
 			}
 			case "RunStatement": {
@@ -473,9 +506,14 @@ export default class Interpreter {
 				return res;
 			}
 			default:
-				throw new Error(
-					`Unknown expression type: ${JSON.stringify(expression)}`
-				);
+				this.errStackManager
+					.addError(
+						new ErrorStack(
+							`Unknown expression type: ${JSON.stringify(expression)}`,
+							env
+						)
+					)
+					.throw();
 		}
 	}
 }

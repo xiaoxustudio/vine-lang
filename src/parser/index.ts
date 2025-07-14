@@ -34,8 +34,10 @@ import {
 import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
 import LiteralFn from "@/utils/LiteralFn";
+import { ErrorStack, ErrorStackManager } from "@/error";
 
 export default class Parser {
+	private errStackManager = new ErrorStackManager();
 	tokens: Token[];
 	constructor(tokens: Token[]) {
 		this.tokens = tokens;
@@ -73,13 +75,19 @@ export default class Parser {
 				}
 				count++;
 				if (count > 1000000) {
-					throw new Error(
-						`Infinite loop to Match ${tag}，${JSON.stringify(token)}`
-					);
+					this.errStackManager
+						.addError(
+							new ErrorStack(
+								`Infinite loop to Match ${tag}，${JSON.stringify(token)}`
+							)
+						)
+						.throw();
 				}
 			}
 		}
-		throw new Error(`Unexpected token: ${tag}`);
+		this.errStackManager
+			.addError(new ErrorStack(`Unexpected token: ${tag}`))
+			.throw();
 	}
 
 	parse(): ProgramStmt {
@@ -290,7 +298,9 @@ export default class Parser {
 						type: "CaseBlockStatement",
 				  } as CaseBlockStmt);
 		}
-		throw new Error(`Unexpected case token: ${token.type}`);
+		this.errStackManager
+			.addError(new ErrorStack(`Unexpected case token: ${token.type}`))
+			.throw();
 	}
 
 	parseFunction() {
@@ -309,7 +319,9 @@ export default class Parser {
 	parseIdentifier(): Expr {
 		const token = this.at();
 		if (token.type !== TokenType.identifier) {
-			throw new Error(`Unexpected token: ${token.type}`);
+			this.errStackManager
+				.addError(new ErrorStack(`Unexpected token: ${token.type}`))
+				.throw();
 		}
 		return { value: this.eat(), type: "Literal" } as Literal;
 	}
@@ -317,7 +329,9 @@ export default class Parser {
 	parseString() {
 		const token = this.at();
 		if (token.type !== TokenType.string) {
-			throw new Error(`Unexpected token: ${token.type}`);
+			this.errStackManager
+				.addError(new ErrorStack(`Unexpected token: ${token.type}`))
+				.throw();
 		}
 		return { value: this.eat(), type: "Literal" } as Literal;
 	}
@@ -335,7 +349,9 @@ export default class Parser {
 				type: "VariableDeclaration",
 			} as VariableDecl;
 		} else {
-			throw new Error(`Unexpected token: ${token.type}`);
+			this.errStackManager
+				.addError(new ErrorStack(`Unexpected token: ${token.type}`))
+				.throw();
 		}
 	}
 
@@ -634,7 +650,11 @@ export default class Parser {
 					type: "MemberExpression",
 				} as MemberExpr;
 			} else {
-				throw new Error(`Unexpected token: ${JSON.stringify(this.at())}`);
+				this.errStackManager
+					.addError(
+						new ErrorStack(`Unexpected token: ${JSON.stringify(this.at())}`)
+					)
+					.throw();
 			}
 		}
 		return object;
@@ -681,7 +701,11 @@ export default class Parser {
 			case TokenType.case:
 				return this.parseSwitchCase();
 			default:
-				throw new Error(`Unexpected token: ${JSON.stringify(token)}`);
+				this.errStackManager
+					.addError(
+						new ErrorStack(`Unexpected token: ${JSON.stringify(token)}`)
+					)
+					.throw();
 		}
 	}
 }

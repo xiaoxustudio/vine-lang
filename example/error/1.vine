@@ -1,0 +1,7 @@
+# 错误
+
+let a = fn:
+    asdads
+end
+
+a()

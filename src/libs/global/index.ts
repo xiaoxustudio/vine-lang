@@ -14,9 +14,9 @@ const print = (args: Token[]) => {
 	const isArray = Array.isArray(args);
 	const toLocalRealvalue = (e: Token, toRaal = true) => {
 		const output = toRaal ? toRealValue(e as unknown as Literal) : e;
-		return isNilLiteral(e as unknown as Literal) && isNil(output)
-			? "\x1b[36mnil\x1b[0m"
-			: isBuilInObject(output) || isFunction(output)
+		return (isNilLiteral(e as unknown as Literal) && isNil(output)) ||
+			isBuilInObject(output) ||
+			isFunction(output)
 			? builInObjectToString(output)
 			: output;
 	};
