@@ -16,65 +16,137 @@ export default defineConfig({
 			await highlighter.loadLanguage(vineGrammar);
 		},
 	},
+	locales: {
+		root: {
+			label: '简体中文',
+			lang: 'zh-CN',
+			link: '/',
+			themeConfig: {
+				nav: [{ text: "首页", link: "/" }],
+				sidebar: [
+					{
+						text: "向导",
+						link: "/guide",
+					},
+					{
+						text: "用法",
+						items: [
+							{
+								text: "基础",
+								link: "/src/base",
+							},
+							{
+								text: "函数",
+								link: "/src/fn",
+							},
+							{
+								text: "条件控制",
+								link: "/src/condition",
+							},
+							{
+								text: "循环",
+								link: "/src/for",
+							},
+							{
+								text: "分支",
+								link: "/src/switch",
+							},
+							{
+								text: "导入",
+								link: "/src/use",
+							},
+							{
+								text: "任务",
+								link: "/src/task",
+							},
+						],
+					},
+					{
+						text: "内置模块",
+						items: [
+							{
+								text: "全局",
+								link: "/src/libs/global",
+							},
+							{
+								text: "文件",
+								link: "/src/libs/io",
+							},
+							{
+								text: "路径",
+								link: "/src/libs/path",
+							},
+						],
+					},
+				],
+			},
+		},
+		en: {
+			label: 'English',
+			lang: 'en',
+			link: '/en/',
+			themeConfig: {
+				nav: [{ text: "Home", link: "/en/" }],
+				sidebar: [
+					{
+						text: "Guide",
+						link: "/en/guide",
+					},
+					{
+						text: "Usage",
+						items: [
+							{
+								text: "Basics",
+								link: "/en/src/base",
+							},
+							{
+								text: "Functions",
+								link: "/en/src/fn",
+							},
+							{
+								text: "Conditions",
+								link: "/en/src/condition",
+							},
+							{
+								text: "Loops",
+								link: "/en/src/for",
+							},
+							{
+								text: "Switch",
+								link: "/en/src/switch",
+							},
+							{
+								text: "Import",
+								link: "/en/src/use",
+							},
+							{
+								text: "Tasks",
+								link: "/en/src/task",
+							},
+						],
+					},
+					{
+						text: "Built-in Modules",
+						items: [
+							{
+								text: "Global",
+								link: "/en/src/libs/global",
+							},
+							{
+								text: "IO",
+								link: "/en/src/libs/io",
+							},
+							{
+								text: "Path",
+								link: "/en/src/libs/path",
+							},
+						],
+					},
+				],
+			},
+		},
+	},
 	themeConfig: {
-		// https://vitepress.dev/reference/default-theme-config
-		nav: [{ text: "首页", link: "/" }],
-		sidebar: [
-			{
-				text: "向导",
-				link: "/guide",
-			},
-			{
-				text: "用法",
-				items: [
-					{
-						text: "基础",
-						link: "/src/base",
-					},
-					{
-						text: "函数",
-						link: "/src/fn",
-					},
-					{
-						text: "条件控制",
-						link: "/src/condition",
-					},
-					{
-						text: "循环",
-						link: "/src/for",
-					},
-					{
-						text: "分支",
-						link: "/src/switch",
-					},
-					{
-						text: "导入",
-						link: "/src/use",
-					},
-					{
-						text: "任务",
-						link: "/src/task",
-					},
-				],
-			},
-			{
-				text: "内置模块",
-				items: [
-					{
-						text: "全局",
-						link: "/src/libs/global",
-					},
-					{
-						text: "文件",
-						link: "/src/libs/io",
-					},
-					{
-						text: "路径",
-						link: "/src/libs/path",
-					},
-				],
-			},
-		],
 		socialLinks: [
 			{ icon: "github", link: "https://github.com/xiaoxustudio/vine-lang" },
 		],
