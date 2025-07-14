@@ -10,6 +10,11 @@ import {
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 
+/**
+ * @description: 打印
+ * @param {Token} args
+ * @return {*}
+ */
 const print = (args: Token[]) => {
 	const isArray = Array.isArray(args);
 	const toLocalRealvalue = (e: Token, toRaal = true) => {

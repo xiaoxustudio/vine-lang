@@ -57,6 +57,23 @@ export default defineConfig({
 					},
 				],
 			},
+			{
+				text: "内置模块",
+				items: [
+					{
+						text: "全局",
+						link: "/src/libs/global",
+					},
+					{
+						text: "文件",
+						link: "/src/libs/io",
+					},
+					{
+						text: "路径",
+						link: "/src/libs/path",
+					},
+				],
+			},
 		],
 		socialLinks: [
 			{ icon: "github", link: "https://github.com/xiaoxustudio/vine-lang" },

@@ -5,11 +5,35 @@ import { Token } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
 
 export interface VinePathModule {
+	/**
+	 * @description: 获取当前环境文件路径
+	 * @return {*}
+	 */
 	file: (this: Environment) => void;
+	/**
+	 * @description: 获取当前环境文件目录
+	 * @return {*}
+	 */
 	dir: (this: Environment) => void;
+	/**
+	 * @description: 获取当前环境文件扩展名
+	 * @return {*}
+	 */
 	extname: (this: Environment, ...args: Token[]) => void;
+	/**
+	 * @description: 解析路径
+	 * @return {*}
+	 */
 	resolve: (this: Environment, ...args: Token[]) => void;
+	/**
+	 * @description: 拼接路径
+	 * @return {*}
+	 */
 	join: (this: Environment, ...args: Token[]) => void;
+	/**
+	 * @description: 判断路径是否为绝对路径
+	 * @return {*}
+	 */
 	isAbsolute: (this: Environment, ...args: Token[]) => void;
 }
 

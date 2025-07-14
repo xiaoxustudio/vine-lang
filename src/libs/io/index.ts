@@ -7,12 +7,33 @@ import LiteralFn from "@/utils/LiteralFn";
 import { Literal } from "@/node";
 
 export interface VineIOModule {
-	exists: (this: Environment, pathName: Token) => void;
+	/**
+	 * @description: 判断文件是否存在
+	 */
+	exists: (this: Environment, pathName: Token) => Literal;
+	/**
+	 * @description: 读取文件内容
+	 */
 	read: (this: Environment, pathName: Token) => Literal;
+	/**
+	 * @description: 写入文件内容
+	 */
 	write: (this: Environment, pathName: Token, content: Token) => void;
+	/**
+	 * @description: 删除文件
+	 */
 	delete: (this: Environment, pathName: Token) => void;
+	/**
+	 * @description: 创建文件夹
+	 */
 	mkdir: (this: Environment, pathName: Token) => void;
+	/**
+	 * @description: 删除文件夹
+	 */
 	deleteDir: (this: Environment, pathName: Token) => void;
+	/**
+	 * @description: 获取文件信息
+	 */
 	info: (this: Environment, pathName: Token) => void;
 }
 
