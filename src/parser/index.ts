@@ -23,6 +23,8 @@ import {
 	RunStmt,
 	SwitchStmt,
 	TaskStmt,
+	TemplateElement,
+	TemplateLiteralExpr,
 	TernaryExpr,
 	ToExpr,
 	UseDecl,
@@ -411,6 +413,72 @@ export default class Parser {
 		return { body, type: "BlockStatement" } as BlockStmt;
 	}
 
+	parseTemplateString(token: Token) {
+		const tmpExpr = {
+			type: "TemplateLiteralExpression",
+			quotes: [],
+		} as TemplateLiteralExpr;
+		const text = token.value as string;
+		const reg = /\{\{([^\}]+)\}\}/g;
+		let lastIndex = 0; // 记录上一次匹配结束的位置
+		let match: RegExpExecArray;
+
+		while ((match = reg.exec(text)) !== null) {
+			// 处理匹配前的普通文本
+			if (match.index > lastIndex) {
+				const literalText = text.substring(lastIndex, match.index);
+				tmpExpr.quotes.push({
+					type: "TemplateElement",
+					value: {
+						type: "Literal",
+						value: {
+							...token,
+							column: match.index,
+							type: TokenType.string,
+							value: literalText,
+						},
+					},
+				} as TemplateElement);
+			}
+
+			// 处理匹配到的插值表达式
+			const tmpElem = {
+				type: "TemplateElement",
+				value: {
+					value: {
+						...token,
+						column: match.index,
+						type: TokenType.identifier,
+						value: match[1],
+					},
+					type: "Literal",
+				} as Literal,
+			} as TemplateElement;
+			tmpExpr.quotes.push(tmpElem);
+
+			// 更新最后匹配位置（当前匹配结束位置）
+			lastIndex = match.index + match[0].length;
+		}
+
+		// 处理末尾的普通文本
+		if (lastIndex < text.length) {
+			const literalText = text.substring(lastIndex);
+			tmpExpr.quotes.push({
+				type: "TemplateElement",
+				value: {
+					type: "Literal",
+					value: {
+						...token,
+						column: lastIndex,
+						type: TokenType.string,
+						value: literalText,
+					},
+				},
+			} as TemplateElement);
+		}
+		return tmpExpr;
+	}
+
 	parseExpression(): Expr {
 		return this.parseTernay();
 	}
@@ -670,6 +738,8 @@ export default class Parser {
 			case TokenType.nan:
 			case TokenType.nil:
 				this.eat();
+				if (/\{\{([^\}]+)\}\}/g.test(token.value))
+					return this.parseTemplateString(token);
 				return {
 					value: token,
 					type: "Literal",

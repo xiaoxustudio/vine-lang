@@ -11,6 +11,7 @@ export type NodeType =
 	| "UseDeclaration"
 	| "UseSpecifier"
 	| "UseDefaultSpecifier"
+	| "TemplateElement"
 	/* expr */
 	| "BinaryExpression"
 	| "ArrayExpression"
@@ -23,9 +24,10 @@ export type NodeType =
 	| "TernayExpression"
 	| "RangeExpression"
 	| "IterableExpression"
-	| "RunStatement"
 	| "ToExpression"
+	| "TemplateLiteralExpression"
 	/* stmt */
+	| "RunStatement"
 	| "WaitStatement"
 	| "TaskStatement"
 	| "BlockStatement"
@@ -53,6 +55,11 @@ export interface Property extends Node {
 	key: Literal;
 	value: Expr;
 	type: "Property";
+}
+
+export interface TemplateElement extends Node {
+	value: Literal;
+	type: "TemplateElement";
 }
 
 /* ================================== Declaration ================================== */
@@ -170,6 +177,11 @@ export interface ToExpr extends Expr {
 	body: BlockStmt;
 	arguments: Expr[];
 	type: "ToExpression";
+}
+
+export interface TemplateLiteralExpr extends Expr {
+	type: "TemplateLiteralExpression";
+	quotes: (TemplateElement | Literal)[];
 }
 
 /* ================================== Stmt ================================== */

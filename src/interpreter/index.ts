@@ -33,6 +33,8 @@ import {
 	RunStmt,
 	ToExpr,
 	WaitStmt,
+	TemplateElement,
+	TemplateLiteralExpr,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
@@ -450,6 +452,18 @@ export default class Interpreter {
 				const start = this.interpretExpression(e.start, env);
 				const end = this.interpretExpression(e.end, env);
 				return { type: BaseDataTag.RANGE, start, end, step: e.step };
+			}
+			case "TemplateElement": {
+				const e = expression as TemplateElement;
+				const data = await this.interpretExpression(e.value, env);
+				return data;
+			}
+			case "TemplateLiteralExpression": {
+				const e = expression as TemplateLiteralExpr;
+				const values = await Promise.all(
+					e.quotes.map(async q => await this.interpretExpression(q, env))
+				);
+				return values.map(v => v.value).join("");
 			}
 			case "LambdaFunctionDecl": {
 				const e = expression as LambdaFunctionDecl;
