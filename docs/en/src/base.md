@@ -35,3 +35,10 @@ let arr = [1, 2, 3, 4, 5]
 ```vine
 let dict = {"a": 1, "b": 2, "c": 3}
 ``` 
+
+### Template String
+
+```vine
+let name = "world"
+let str = "hello, {{name}}"
+```
