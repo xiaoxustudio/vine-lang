@@ -14,10 +14,13 @@
 		"stripInternal": true,
 		"pretty": true,
 		"declaration": true,
-		"baseUrl": "./",
-		"declarationDir": "./dist/types",
+		"baseUrl": ".",
+		"declarationDir": "./dist",
 		"outDir": "./dist",
-		"paths": { "@/*": ["./src/*"] },
+		"paths": { "@/*": ["./src/*"] }
+	},
+	"tsc-alias": {
+		"verbose": true,
 	},
 	"include": ["./src/**/*"],
 	"exclude": ["node_modules", "dist"]

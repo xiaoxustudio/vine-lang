@@ -3,7 +3,7 @@
 	"version": "1.0.25",
 	"description": "a language parser and runtime",
 	"main": "dist/index.js",
-	"types": "dist/types/index.d.ts",
+	"types": "dist/index.d.ts",
 	"keywords": [
 		"utils",
 		"tokenlize",
@@ -34,7 +34,6 @@
 	"author": "xuran",
 	"license": "MIT",
 	"devDependencies": {
-		"@rollup/plugin-alias": "^5.1.1",
 		"@rollup/plugin-commonjs": "^28.0.6",
 		"@rollup/plugin-node-resolve": "^16.0.1",
 		"@rollup/plugin-typescript": "^12.1.4",
