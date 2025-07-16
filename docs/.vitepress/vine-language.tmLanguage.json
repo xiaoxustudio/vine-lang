@@ -2,11 +2,16 @@
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "vine",
 	"scopeName": "source.vine",
-	"fileTypes": [".vine"],
+	"fileTypes": [ ".vine" ],
 	"injectionSelector": "L:source.vine",
 	"patterns": [
+		{
+			"include": "#block_comment"
+		},
+		{
+			"include": "#line_comment"
+		},
 		{ "include": "#keywords" },
-		{ "include": "#comments" },
 		{ "include": "#strings" },
 		{ "include": "#numbers" },
 		{ "include": "#booleans" },
@@ -18,19 +23,26 @@
 		{ "include": "#control-flow" }
 	],
 	"repository": {
+		"block_comment": {
+			"name": "comment.block.vine",
+			"begin": "#\\*",
+			"end": "\\*#",
+			"beginCaptures": {
+				"0": { "name": "punctuation.definition.comment.begin.vine" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.definition.comment.end.vine" }
+			}
+		},
+		"line_comment": {
+			"name": "comment.line.vine",
+			"match": "#.*$"
+		},
 		"keywords": {
 			"patterns": [
 				{
 					"name": "keyword.control.vine",
 					"match": "\\b(let|fn|if|else|end|use|return|for|in|as|expose|switch|case|break|default|pick|task|run)\\b"
-				}
-			]
-		},
-		"comments": {
-			"patterns": [
-				{
-					"name": "comment.line.vine",
-					"match": "#.*$"
 				}
 			]
 		},
@@ -40,10 +52,25 @@
 					"name": "string.quoted.double.vine",
 					"begin": "\"",
 					"end": "\"",
+					"beginCaptures": { "0": { "name": "punctuation.definition.string.begin.vine" } },
+					"endCaptures": { "0": { "name": "punctuation.definition.string.end.vine" } },
 					"patterns": [
 						{
 							"name": "constant.character.escape.vine",
-							"match": "\\\\."
+							"match": "\\\\([\"'\\\\nrt]|u[0-9A-Fa-f]{4})"
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.vine",
+					"begin": "'",
+					"end": "'",
+					"beginCaptures": { "0": { "name": "punctuation.definition.string.begin.vine" } },
+					"endCaptures": { "0": { "name": "punctuation.definition.string.end.vine" } },
+					"patterns": [
+						{
+							"name": "constant.character.escape.vine",
+							"match": "\\\\([\"'\\\\nrt]|u[0-9A-Fa-f]{4})"
 						}
 					]
 				}
@@ -97,9 +124,7 @@
 				"1": { "name": "entity.name.function.call.vine" },
 				"2": { "name": "punctuation.definition.parameters.begin.vine" }
 			},
-			"endCaptures": {
-				"0": { "name": "punctuation.definition.parameters.end.vine" }
-			},
+			"endCaptures": { "0": { "name": "punctuation.definition.parameters.end.vine" } },
 			"patterns": [
 				{ "include": "#strings" },
 				{ "include": "#numbers" },
@@ -182,13 +207,9 @@
 					"begin": "\\b(if)\\b",
 					"end": "\\bend\\b",
 					"name": "meta.block.control.conditional.vine",
-					"beginCaptures": {
-						"1": { "name": "keyword.control.conditional.vine" }
-					},
-					"endCaptures": {
-						"0": { "name": "keyword.control.block.end.vine" }
-					},
-					"patterns": [{ "include": "$self" }]
+					"beginCaptures": { "1": { "name": "keyword.control.conditional.vine" } },
+					"endCaptures": { "0": { "name": "keyword.control.block.end.vine" } },
+					"patterns": [ { "include": "$self" } ]
 				},
 				{
 					"begin": "\\b(fn)\\b\\s*([a-zA-Z_][a-zA-Z0-9_]*)?",
@@ -198,22 +219,16 @@
 						"1": { "name": "keyword.control.function.vine" },
 						"2": { "name": "entity.name.function.vine" }
 					},
-					"endCaptures": {
-						"0": { "name": "keyword.control.block.end.vine" }
-					},
-					"patterns": [{ "include": "$self" }]
+					"endCaptures": { "0": { "name": "keyword.control.block.end.vine" } },
+					"patterns": [ { "include": "$self" } ]
 				},
 				{
 					"begin": "\\b(for)\\b",
 					"end": "\\bend\\b",
 					"name": "meta.block.loop.vine",
-					"beginCaptures": {
-						"1": { "name": "keyword.control.loop.vine" }
-					},
-					"endCaptures": {
-						"0": { "name": "keyword.control.block.end.vine" }
-					},
-					"patterns": [{ "include": "$self" }]
+					"beginCaptures": { "1": { "name": "keyword.control.loop.vine" } },
+					"endCaptures": { "0": { "name": "keyword.control.block.end.vine" } },
+					"patterns": [ { "include": "$self" } ]
 				}
 			]
 		}

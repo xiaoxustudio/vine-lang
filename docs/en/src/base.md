@@ -8,11 +8,24 @@ Vine's syntax is very simple, combining elements from Lua and JavaScript while a
 
 ### Comments
 
-Currently, only single-line comments are supported. Multi-line comments are not yet supported.
+single-line comments
 
 ```vine
 # I am a comment
+
+let a = 1
 ```
+
+Multi-line comments
+
+```vine
+#*
+I am a comment
+*#
+
+let a = 1
+```
+
 
 ### Variables
 
