@@ -3,5 +3,11 @@ let str = "this is {{num}}"
 
 let other = "你猜"
 
+# 打印ta
 print(str)
+
+#* 多行
+注释
+就是这
+*#
 print("徐然的年龄是 {{num}},对吗 {{other}}？")

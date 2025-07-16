@@ -15,9 +15,9 @@ export function replProgram() {
 		eval: (cmd, context, filename, callback) => {
 			try {
 				const tk = tokenlize(cmd);
-				const parse = new Parser(tk);
+				const parse = new Parser();
 				const ipt = new Interpreter(env);
-				const ast = parse.parse();
+				const ast = parse.parse(tk);
 				let res = ipt.interpret(ast) as any;
 				callback(null, res);
 			} catch (err) {

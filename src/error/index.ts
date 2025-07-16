@@ -41,7 +41,7 @@ export class ErrorStack extends Error {
 		}
 		if (!env) this.setCode(ErrorCode.SYNTAX_ERROR);
 		this.cause = {
-			filePath: env.filePath,
+			filePath: env?.filePath || null,
 			line: pos.line,
 			column: pos.column,
 		};

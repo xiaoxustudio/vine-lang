@@ -13,6 +13,8 @@ export function tokenlize(code: string): Token[] {
 	const lines = code.split("\n");
 	let lineNum = 1;
 	let colNum = 1;
+	let inMultilineComment = false; // 是否在多行注释中
+	let multilineCommentContent = "";
 
 	const addToken = (type: TokenType, value: string) => {
 		tokens.push({ type, value, line: lineNum, column: colNum });
@@ -24,6 +26,20 @@ export function tokenlize(code: string): Token[] {
 		colNum = 1;
 		for (let j = 0; j < line.length; j++) {
 			const ch = line[j];
+			
+			if (inMultilineComment) {
+				if (ch === '*' && j + 1 < line.length && line[j + 1] === '#') {
+					multilineCommentContent += '*#';
+					addToken(TokenType.comment, multilineCommentContent);
+					inMultilineComment = false;
+					multilineCommentContent = "";
+					j++;
+					continue;
+				}
+				multilineCommentContent += ch;
+				continue;
+			}
+
 			if (isDigit(ch)) {
 				let num = ch;
 				j++;
@@ -54,6 +70,14 @@ export function tokenlize(code: string): Token[] {
 			} else if (isOperator(ch)) {
 				addToken(TokenType.operator, ch);
 			} else if (isComment(ch)) {
+				// Check for multiline comment start
+				if (j + 1 < line.length && line[j + 1] === '*') {
+					inMultilineComment = true;
+					multilineCommentContent = "#*";
+					j++;
+					continue;
+				}
+				// Single line comment
 				let comment = ch;
 				j++;
 				while (j < line.length) {
@@ -89,7 +113,15 @@ export function tokenlize(code: string): Token[] {
 			}
 			colNum++;
 		}
+		if (inMultilineComment) {
+			multilineCommentContent += "\n";
+		}
 		lineNum++;
 	}
+	
+	if (inMultilineComment) {
+		throw "Unterminated multiline comment";
+	}
+	
 	return tokens;
 }

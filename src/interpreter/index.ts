@@ -82,6 +82,9 @@ export default class Interpreter {
 				return this.interpretMemberExpression(stmt as MemberExpr, env);
 			case "AssignmentExpression":
 				return this.interpretAssignmentExpression(stmt as AssignmentExpr, env);
+			case "CommentStatement": {
+				return;
+			}
 			case "IfStatement":
 				return this.interpretIfStatement(stmt as IfStmt, env);
 			case "ForStatement":
@@ -196,7 +199,8 @@ export default class Interpreter {
 			const text = fs.readFileSync(
 				pathName.endsWith(".vine") ? pathName : `${pathName}.vine`
 			);
-			const parser = new Parser(tokenlize(text.toString()));
+			const parser = new Parser();
+			parser.parse(tokenlize(text.toString()));
 			const program = parser.parse();
 			const interpreter = new Interpreter(context);
 			interpreter.interpret(program);

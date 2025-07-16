@@ -4,6 +4,7 @@ export type NodeType =
 	| "Program"
 	| "Literal"
 	| "Property"
+	| "CommentStatement"
 	/* Declaration */
 	| "LambdaFunctionDecl"
 	| "FunctionDeclaration"
@@ -185,6 +186,11 @@ export interface TemplateLiteralExpr extends Expr {
 }
 
 /* ================================== Stmt ================================== */
+
+export interface CommentStmt extends Node {
+	value: Token;
+	type: "CommentStatement";
+}
 
 export interface RunStmt extends Expr {
 	callee: CallExpr;

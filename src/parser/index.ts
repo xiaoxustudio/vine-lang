@@ -5,6 +5,7 @@ import {
 	BlockStmt,
 	CallExpr,
 	CaseBlockStmt,
+	CommentStmt,
 	CompareExpr,
 	DefaultCaseBlockStmt,
 	EqualExpr,
@@ -41,10 +42,10 @@ import { ErrorStack, ErrorStackManager } from "@/error";
 export default class Parser {
 	private errStackManager = new ErrorStackManager();
 	tokens: Token[];
-	constructor(tokens: Token[]) {
-		this.tokens = tokens;
-	}
 
+	/**
+	 * @description: code push this stack tokens
+	 */
 	pushStack(token: Token[]) {
 		this.tokens.push(...token);
 	}
@@ -92,7 +93,8 @@ export default class Parser {
 			.throw();
 	}
 
-	parse(): ProgramStmt {
+	parse(tokens?: Token[]): ProgramStmt {
+		if (tokens) this.tokens = tokens;
 		const body = [];
 		if (this.tokens.length === 0) {
 			return { type: "Program", body } as ProgramStmt;
@@ -110,8 +112,7 @@ export default class Parser {
 			case TokenType.use:
 				return this.parseUse();
 			case TokenType.comment:
-				this.eat();
-				return this.parseStatement();
+				return this.parseComment();
 			case TokenType.task:
 				return this.parseTask();
 			case TokenType.let:
@@ -135,6 +136,10 @@ export default class Parser {
 			default:
 				return this.parseExpression();
 		}
+	}
+
+	parseComment() {
+		return { type: "CommentStatement", value: this.eat() } as CommentStmt;
 	}
 
 	parseWait() {

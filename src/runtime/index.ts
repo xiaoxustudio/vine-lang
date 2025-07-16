@@ -9,7 +9,7 @@ class Vine {
 	interpreter: Interpreter;
 	env: Environment;
 	constructor() {
-		this.parser = new Parser([]);
+		this.parser = new Parser();
 		this.interpreter = new Interpreter(new Environment());
 		this.env = new Environment();
 	}

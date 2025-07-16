@@ -17,7 +17,7 @@ export default function runFile(pathFile: string) {
 			: path.join(cwd, pathFile); // 开发环境
 		const sourceCode = fs.readFileSync(absPath, "utf8");
 		const tokens = tokenlize(sourceCode);
-		const ast = new Parser(tokens).parse();
+		const ast = new Parser().parse(tokens);
 		const env = new Environment();
 		env.setFilePath(absPath);
 		const ipt = new Interpreter(env);
