@@ -13,34 +13,36 @@ export function tokenlize(code: string): Token[] {
 	const lines = code.split("\n");
 	let lineNum = 1;
 	let colNum = 1;
-	let inMultilineComment = false; // 是否在多行注释中
+	let inMultilineComment = false;
 	let multilineCommentContent = "";
+	let multilineStartCol = 1;
 
-	const addToken = (type: TokenType, value: string) => {
-		tokens.push({ type, value, line: lineNum, column: colNum });
-		colNum += value.length;
+	const addToken = (type: TokenType, value: string, tokenStartCol: number) => {
+		tokens.push({ type, value, line: lineNum, column: tokenStartCol });
 	};
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
-		colNum = 1;
 		for (let j = 0; j < line.length; j++) {
 			const ch = line[j];
-			
+
 			if (inMultilineComment) {
 				if (ch === '*' && j + 1 < line.length && line[j + 1] === '#') {
 					multilineCommentContent += '*#';
-					addToken(TokenType.comment, multilineCommentContent);
+					addToken(TokenType.comment, multilineCommentContent, multilineStartCol);
 					inMultilineComment = false;
 					multilineCommentContent = "";
 					j++;
+					colNum += 2;
 					continue;
 				}
 				multilineCommentContent += ch;
+				colNum++;
 				continue;
 			}
 
 			if (isDigit(ch)) {
+				const startCol = colNum;
 				let num = ch;
 				j++;
 				while (j < line.length && isDigit(line[j])) {
@@ -48,8 +50,10 @@ export function tokenlize(code: string): Token[] {
 					j++;
 				}
 				j--;
-				addToken(TokenType.number, num);
+				addToken(TokenType.number, num, startCol);
+				colNum += num.length;
 			} else if (isAlpha(ch)) {
+				const startCol = colNum;
 				let word = ch;
 				j++;
 				while (j < line.length && (isAlpha(line[j]) || isDigit(line[j]))) {
@@ -60,21 +64,26 @@ export function tokenlize(code: string): Token[] {
 				if (isKeyword(word)) {
 					const keyword = Keywords[word as keyof typeof Keywords];
 					if (keyword === TokenType.boolean) {
-						addToken(TokenType.boolean, word);
+						addToken(TokenType.boolean, word, startCol);
 					} else {
-						addToken(keyword, word);
+						addToken(keyword, word, startCol);
 					}
 				} else {
-					addToken(TokenType.identifier, word);
+					addToken(TokenType.identifier, word, startCol);
 				}
+				colNum += word.length;
 			} else if (isOperator(ch)) {
-				addToken(TokenType.operator, ch);
+				addToken(TokenType.operator, ch, colNum);
+				colNum++;
 			} else if (isComment(ch)) {
+				const startCol = colNum;
 				// Check for multiline comment start
 				if (j + 1 < line.length && line[j + 1] === '*') {
 					inMultilineComment = true;
 					multilineCommentContent = "#*";
+					multilineStartCol = startCol;
 					j++;
+					colNum += 2;
 					continue;
 				}
 				// Single line comment
@@ -85,43 +94,55 @@ export function tokenlize(code: string): Token[] {
 					j++;
 				}
 				j--;
-				addToken(TokenType.comment, comment);
+				addToken(TokenType.comment, comment, startCol);
+				colNum += comment.length;
 			} else if (["(", ")"].includes(ch)) {
-				addToken(TokenType.paren, ch);
+				addToken(TokenType.paren, ch, colNum);
+				colNum++;
 			} else if (["[", "]"].includes(ch)) {
-				addToken(TokenType.bracket, ch);
+				addToken(TokenType.bracket, ch, colNum);
+				colNum++;
 			} else if (["{", "}"].includes(ch)) {
-				addToken(TokenType.curly, ch);
+				addToken(TokenType.curly, ch, colNum);
+				colNum++;
 			} else if (ch === ",") {
-				addToken(TokenType.comma, ch);
+				addToken(TokenType.comma, ch, colNum);
+				colNum++;
 			} else if (ch === "?") {
-				addToken(TokenType.question, ch);
+				addToken(TokenType.question, ch, colNum);
+				colNum++;
 			} else if (ch === ":") {
-				addToken(TokenType.colon, ch);
+				addToken(TokenType.colon, ch, colNum);
+				colNum++;
 			} else if (ch === ".") {
-				addToken(TokenType.dot, ch);
+				addToken(TokenType.dot, ch, colNum);
+				colNum++;
 			} else if (isString(ch)) {
+				const startCol = colNum;
 				let str = "";
+				const quote = ch;
 				j++;
-				while (j < line.length && !isString(line[j])) {
+				while (j < line.length && line[j] !== quote) {
 					str += line[j];
 					j++;
 				}
-				addToken(TokenType.string, str);
-			} else if (!isSkip(ch)) {
-				throw `Unknown char : ${ch}`;
+				addToken(TokenType.string, str, startCol + 1);
+				colNum += str.length + 2; // 加2是因为要包含引号
+			} else if (isSkip(ch)) {
+				colNum++;
+			} else {
+				throw `Unknown char : ${ch} at line ${lineNum}, column ${colNum}`;
 			}
-			colNum++;
 		}
 		if (inMultilineComment) {
 			multilineCommentContent += "\n";
 		}
 		lineNum++;
+		colNum = 1;
 	}
-	
+
 	if (inMultilineComment) {
 		throw "Unterminated multiline comment";
 	}
-	
 	return tokens;
 }
