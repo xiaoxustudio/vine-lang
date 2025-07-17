@@ -5,8 +5,9 @@ import Environment from "@/environment";
 import { Token } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
 import { Literal } from "@/node";
+import { LikeModule } from "../types";
 
-export interface VineIOModule {
+export interface VineIOModule extends LikeModule {
 	/**
 	 * @description: 判断文件是否存在
 	 */

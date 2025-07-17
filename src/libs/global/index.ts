@@ -11,7 +11,7 @@ import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 
 /**
- * @description: 打印
+ * @description: print log
  * @param {Token} args
  * @return {*}
  */

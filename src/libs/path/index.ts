@@ -3,8 +3,9 @@ import { Export, ModuleTag } from "../package";
 import Environment from "@/environment";
 import { Token } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
+import { LikeModule } from "../types";
 
-export interface VinePathModule {
+export interface VinePathModule extends LikeModule {
 	/**
 	 * @description: 获取当前环境文件路径
 	 * @return {*}
