@@ -226,11 +226,12 @@ export default class Interpreter {
 		return null;
 	}
 
-	interpretForStatement(stmt: ForStmt, env: Environment) {
+	async interpretForStatement(stmt: ForStmt, env: Environment) {
 		const id = stmt.init;
 		const value = stmt.value;
-		const range = this.interpretExpression(stmt.range, env);
+		const range = await this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
+		// console.log(start, end, step);
 		if (range.type === BaseDataTag.RANGE) {
 			const step = range?.step.value === ".." ? 1 : Number(range[2].value);
 			const start = toRealValue(range.start);
@@ -453,8 +454,8 @@ export default class Interpreter {
 			}
 			case "RangeExpression": {
 				const e = expression as RangeExpr;
-				const start = this.interpretExpression(e.start, env);
-				const end = this.interpretExpression(e.end, env);
+				const start = await this.interpretExpression(e.start, env);
+				const end = await this.interpretExpression(e.end, env);
 				return { type: BaseDataTag.RANGE, start, end, step: e.step };
 			}
 			case "TemplateElement": {

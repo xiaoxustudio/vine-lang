@@ -1,0 +1,11 @@
+use "vine:date"
+
+let startTime = date.now()
+
+for i in 1..10000:
+    print("第{{i}}次循环")
+end
+let endTime = date.now()
+
+let time = endTime - startTime
+print(time)
