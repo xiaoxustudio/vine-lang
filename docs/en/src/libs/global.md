@@ -2,9 +2,7 @@
 
 Functions available globally
 
-## print
-
-Print to console
+## Print to console
 
 ```vine
 print(...args)

@@ -6,6 +6,13 @@ const vineGrammar = JSON.parse(
 	fs.readFileSync(join(__dirname, "./vine-language.tmLanguage.json"), "utf8")
 );
 
+const libs = fs.readdirSync(join(__dirname, "../src/libs")).map(file => {
+	return {
+		text: file.split(".")[0],
+		link: `/src/libs/${file.split(".")[0]}`,
+	};
+});
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
 	title: "Vine Language",
@@ -18,9 +25,9 @@ export default defineConfig({
 	},
 	locales: {
 		root: {
-			label: '简体中文',
-			lang: 'zh-CN',
-			link: '/',
+			label: "简体中文",
+			lang: "zh-CN",
+			link: "/",
 			themeConfig: {
 				nav: [{ text: "首页", link: "/" }],
 				sidebar: [
@@ -63,28 +70,15 @@ export default defineConfig({
 					},
 					{
 						text: "内置模块",
-						items: [
-							{
-								text: "全局",
-								link: "/src/libs/global",
-							},
-							{
-								text: "文件",
-								link: "/src/libs/io",
-							},
-							{
-								text: "路径",
-								link: "/src/libs/path",
-							},
-						],
+						items: libs,
 					},
 				],
 			},
 		},
 		en: {
-			label: 'English',
-			lang: 'en',
-			link: '/en/',
+			label: "English",
+			lang: "en",
+			link: "/en/",
 			themeConfig: {
 				nav: [{ text: "Home", link: "/en/" }],
 				sidebar: [
@@ -127,20 +121,11 @@ export default defineConfig({
 					},
 					{
 						text: "Built-in Modules",
-						items: [
-							{
-								text: "Global",
-								link: "/en/src/libs/global",
-							},
-							{
-								text: "IO",
-								link: "/en/src/libs/io",
-							},
-							{
-								text: "Path",
-								link: "/en/src/libs/path",
-							},
-						],
+						items: libs.map(lib => ({
+							...lib,
+							text: lib.text[0].toUpperCase() + lib.text.slice(1),
+							link: lib.link.replace("/src/", "/en/src/"),
+						})),
 					},
 				],
 			},
