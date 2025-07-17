@@ -18,8 +18,9 @@
 	},
 	"scripts": {
 		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && tsc-alias -p tsconfig.json",
-		"dev": "pnpm prebuild && pnpm prerun",
-		"build": "pnpm prebuild",
+		"watch": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs -w",
+		"dev": "cross-env NODE_ENV=development pnpm prebuild && pnpm prerun",
+		"build": "cross-env NODE_ENV=production pnpm prebuild",
 		"exebuild": "pnpm prebuild && node ./scripts/build.js",
 		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl",
@@ -36,9 +37,11 @@
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^28.0.6",
 		"@rollup/plugin-node-resolve": "^16.0.1",
+		"@rollup/plugin-replace": "^6.0.2",
 		"@rollup/plugin-typescript": "^12.1.4",
 		"@types/node": "^22.15.29",
 		"@yao-pkg/pkg": "^6.5.1",
+		"cross-env": "^7.0.3",
 		"rollup": "^4.41.1",
 		"rollup-plugin-typescript2": "^0.36.0",
 		"tsc-alias": "^1.8.16",

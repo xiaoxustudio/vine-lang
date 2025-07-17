@@ -412,7 +412,13 @@ export default class Interpreter {
 				const e = expression as ObjectExpr;
 				const obj = new Map<Literal, Expr>();
 				for (const target of e.properties) {
-					const key = await this.interpretExpression(target.key, env);
+					let key;
+					try {
+						// 找不到则识别为字符串
+						key = await this.interpretExpression(target.key, env);
+					} catch {
+						key = LiteralFn(target.key.value.value);
+					}
 					obj.set(key, await this.interpretExpression(target.value, env));
 				}
 				setObjectData(obj, "type", BaseDataTag.OBJECT); // 设置类型

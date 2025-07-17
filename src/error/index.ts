@@ -28,7 +28,7 @@ export class ErrorStack extends Error {
 		super(message);
 		this.name = ErrorCode.INTERPRETER_ERROR;
 		this.code = ErrorCode.INTERPRETER_ERROR;
-		this.stack = "";
+		if (process.env.NODE_ENV === "production") this.stack = "";
 		let pos = { line: null, column: null };
 		if (token) {
 			if (token.type === "Literal") {
