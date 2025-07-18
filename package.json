@@ -1,6 +1,6 @@
 {
 	"name": "vine-lang",
-	"version": "1.0.26",
+	"version": "1.0.27",
 	"description": "a language parser and runtime",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -15,6 +15,13 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/xiaoxustudio/vine-lang.git"
+	},
+	"bugs": {
+		"url": "https://github.com/xiaoxustudio/vine-lang/issues"
+	},
+	"homepage": "https://github.com/xiaoxustudio/vine-lang#readme",
+	"engines": {
+		"node": ">=18.0.0"
 	},
 	"scripts": {
 		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && tsc-alias -p tsconfig.json",
