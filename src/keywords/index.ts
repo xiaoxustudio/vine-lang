@@ -28,6 +28,7 @@ export enum TokenType {
 	if,
 	else,
 	let,
+	cst, // const keyword
 	fn,
 	return,
 	end,
@@ -68,6 +69,7 @@ export const Keywords = {
 	if: TokenType.if,
 	else: TokenType.else,
 	let: TokenType.let,
+	cst: TokenType.cst,
 	fn: TokenType.fn,
 	return: TokenType.return,
 	end: TokenType.end,

@@ -116,7 +116,8 @@ export default class Parser {
 			case TokenType.task:
 				return this.parseTask();
 			case TokenType.let:
-				return this.parseLet();
+			case TokenType.cst:
+				return this.parseVariable();
 			case TokenType.if:
 				return this.parseIf();
 			case TokenType.fn:
@@ -343,8 +344,12 @@ export default class Parser {
 		return { value: this.eat(), type: "Literal" } as Literal;
 	}
 
-	parseLet() {
-		this.match(TokenType.let); // eat the 'let' token
+	parseVariable() {
+		let is_const = false;
+		if (this.at().type === TokenType.cst) {
+			is_const = true;
+		}
+		this.eat();
 		const identifier = this.parseIdentifier();
 		const token = this.at();
 		if (token.type === TokenType.operator && token.value === "=") {
@@ -354,6 +359,7 @@ export default class Parser {
 				id: identifier,
 				value,
 				type: "VariableDeclaration",
+				is_const,
 			} as VariableDecl;
 		} else {
 			this.errStackManager

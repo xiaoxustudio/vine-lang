@@ -99,6 +99,7 @@ export interface VariableDecl extends Node {
 	id: Literal;
 	value: Expr;
 	type: "VariableDeclaration";
+	is_const: boolean;
 }
 
 /* ================================== Expr ================================== */

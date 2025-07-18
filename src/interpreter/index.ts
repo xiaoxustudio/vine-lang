@@ -231,7 +231,6 @@ export default class Interpreter {
 		const value = stmt.value;
 		const range = await this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
-		// console.log(start, end, step);
 		if (range.type === BaseDataTag.RANGE) {
 			const step = range?.step.value === ".." ? 1 : Number(range[2].value);
 			const start = toRealValue(range.start);
@@ -270,8 +269,21 @@ export default class Interpreter {
 			.throw();
 	}
 
-	interpretAssignmentExpression(stmt: AssignmentExpr, env: Environment) {
-		env.setVariable(stmt.left, this.interpretExpression(stmt.right, env));
+	async interpretAssignmentExpression(stmt: AssignmentExpr, env: Environment) {
+		const value = await this.interpretExpression(stmt.right, env);
+		try {
+			env.setVariable(stmt.left, value);
+		} catch (e) {
+			this.errStackManager
+				.addError(
+					new ErrorStack(
+						`AssignmentExpression error: ${e}`,
+						env,
+						stmt.left.value
+					)
+				)
+				.throw();
+		}
 	}
 	interpretBlockStatement(stmt: BlockStmt, env: Environment) {
 		let returnVal;
@@ -327,7 +339,7 @@ export default class Interpreter {
 	}
 	async interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
 		const value = await this.interpretExpression(stmt.value, env);
-		env.declareVariable(stmt.id, value);
+		env.declareVariable(stmt.id, value, stmt.is_const);
 	}
 	async interpretMemberExpression(e: MemberExpr, env: Environment) {
 		const object = await this.interpretExpression(e.object, env);
@@ -423,6 +435,12 @@ export default class Interpreter {
 				}
 				setObjectData(obj, "type", BaseDataTag.OBJECT); // 设置类型
 				return obj;
+			}
+			case "AssignmentExpression": {
+				return this.interpretAssignmentExpression(
+					expression as AssignmentExpr,
+					env
+				);
 			}
 			case "CompareExpression": {
 				const e = expression as CompareExpr;
