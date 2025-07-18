@@ -43,6 +43,7 @@ Constants are declared using the `cst` keyword. Constants are similar to variabl
 
 ```vine
 cst PI = 3.14
+```
 
 ### Arrays
 
