@@ -144,10 +144,11 @@ export default class Parser {
 	}
 
 	parseWait() {
-		this.match(TokenType.wait);
+		const id = this.eat();
 		return {
 			type: "WaitStatement",
 			async: this.parseRun(),
+			id,
 		} as WaitStmt;
 	}
 
@@ -159,7 +160,7 @@ export default class Parser {
 	}
 
 	parseRun() {
-		this.match(TokenType.run);
+		const id = this.eat();
 		const callee = this.parseCall();
 		let to: ToExpr[] = [];
 		if (this.at().type === TokenType.to) {
@@ -172,23 +173,26 @@ export default class Parser {
 			type: "RunStatement",
 			callee,
 			to,
+			id,
 		} as RunStmt;
 	}
 
 	parseTask() {
-		this.match(TokenType.task);
+		const id = this.eat();
 		const fn = this.parseFunction();
 		return {
 			type: "TaskStatement",
 			fn,
+			id,
 		} as TaskStmt;
 	}
 
 	parseExpose() {
-		this.match(TokenType.expose);
+		const id = this.eat();
 		return {
 			type: "ExposeStmtement",
 			body: this.parseStatement(),
+			id,
 		} as ExposeStmt;
 	}
 
@@ -222,7 +226,7 @@ export default class Parser {
 	}
 
 	parseUse() {
-		this.match(TokenType.use);
+		const id = this.eat();
 		const source = this.parseString();
 		const specifiers = [];
 		if (this.at().type === TokenType.as) {
@@ -238,20 +242,22 @@ export default class Parser {
 			type: "UseDeclaration",
 			source,
 			specifiers,
+			id,
 		} as UseDecl;
 	}
 
 	parseReturn() {
-		this.match(TokenType.return);
+		const id = this.eat();
 		const value = this.parseExpression();
 		return {
 			type: "ReturnStatement",
 			value,
+			id,
 		} as ReturnStmt;
 	}
 
 	parseSwitch() {
-		this.match(TokenType.switch); // eat the 'switch' token
+		const id = this.eat();
 		const test = this.parseExpression();
 		this.match(TokenType.colon);
 		const cases: (CaseBlockStmt | DefaultCaseBlockStmt)[] = [];
@@ -264,6 +270,7 @@ export default class Parser {
 			type: "SwitchStmtement",
 			test,
 			cases,
+			id,
 		} as SwitchStmt;
 	}
 
@@ -312,7 +319,7 @@ export default class Parser {
 	}
 
 	parseFunction() {
-		this.match(TokenType.fn);
+		const preId = this.eat();
 		const id = this.parseIdentifier();
 		const args = this.parseArgs();
 		const body = this.parseBlock();
@@ -321,6 +328,7 @@ export default class Parser {
 			arguments: args,
 			body,
 			type: "FunctionDeclaration",
+			preId,
 		} as FunctionDecl;
 	}
 
@@ -349,7 +357,7 @@ export default class Parser {
 		if (this.at().type === TokenType.cst) {
 			is_const = true;
 		}
-		this.eat();
+		const preId = this.eat();
 		const identifier = this.parseIdentifier();
 		const token = this.at();
 		if (token.type === TokenType.operator && token.value === "=") {
@@ -360,6 +368,7 @@ export default class Parser {
 				value,
 				type: "VariableDeclaration",
 				is_const,
+				preId,
 			} as VariableDecl;
 		} else {
 			this.errStackManager
@@ -369,7 +378,7 @@ export default class Parser {
 	}
 
 	parseIf() {
-		this.match(TokenType.if); // eat the 'if' token
+		const id = this.eat();
 		const condition = this.parseExpression();
 		const consequent = this.parseBlock(true);
 		const token = this.at();
@@ -385,11 +394,12 @@ export default class Parser {
 			test: condition,
 			consequent,
 			alternate,
+			id,
 		} as IfStmt;
 	}
 
 	parseFor() {
-		this.match(TokenType.for); // eat the 'for' token
+		const id = this.eat();
 		const identifier = this.parseIdentifier();
 		const token = this.at();
 		let value;
@@ -401,6 +411,7 @@ export default class Parser {
 		const range = this.parseExpression() as RangeExpr;
 		const body = this.parseBlock();
 		return {
+			id,
 			init: identifier,
 			value,
 			range,
@@ -411,7 +422,7 @@ export default class Parser {
 	}
 
 	parseBlock(noEnd: boolean = false) {
-		this.match(TokenType.colon, ":"); // eat the ':' token
+		const id = this.eat();
 		const body = [];
 		while (
 			this.tokens.length > 0 &&
@@ -421,7 +432,7 @@ export default class Parser {
 			body.push(stmt);
 		}
 		if (!noEnd) this.match(TokenType.end); // eat the 'end' token
-		return { body, type: "BlockStatement" } as BlockStmt;
+		return { body, type: "BlockStatement", id } as BlockStmt;
 	}
 
 	parseTemplateString(token: Token) {

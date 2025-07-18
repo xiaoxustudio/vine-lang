@@ -43,6 +43,7 @@ export type NodeType =
 
 export interface Node {
 	type: NodeType;
+	id?: Literal | Token;
 }
 
 export interface Expr extends Node {}
@@ -83,6 +84,7 @@ export interface UseDecl extends Node {
 }
 
 export interface FunctionDecl extends Node {
+	preId: Token;
 	id: Literal;
 	arguments: Expr[];
 	body: BlockStmt;
@@ -96,6 +98,7 @@ export interface LambdaFunctionDecl extends Node {
 }
 
 export interface VariableDecl extends Node {
+	preId: Token;
 	id: Literal;
 	value: Expr;
 	type: "VariableDeclaration";
@@ -200,6 +203,7 @@ export interface RunStmt extends Expr {
 }
 
 export interface ExposeStmt extends Node {
+	id: Token;
 	body: Expr;
 	specifiers: Expr[];
 	type: "ExposeStmtement";
