@@ -37,6 +37,13 @@ let b = 2
 let c = a + b
 ```
 
+### Constants
+
+Constants are declared using the `cst` keyword. Constants are similar to variables, but their values cannot be changed after they are declared.
+
+```vine
+cst PI = 3.14
+
 ### Arrays
 
 ```vine

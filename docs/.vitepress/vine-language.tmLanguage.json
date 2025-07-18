@@ -42,7 +42,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.vine",
-					"match": "\\b(let|fn|if|else|end|use|return|for|in|as|expose|switch|case|break|default|pick|task|run)\\b"
+					"match": "\\b(cst|let|fn|if|else|end|use|return|for|in|as|expose|switch|case|break|default|pick|task|run)\\b"
 				}
 			]
 		},

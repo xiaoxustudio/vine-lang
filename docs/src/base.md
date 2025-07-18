@@ -35,6 +35,19 @@ let b = 2
 let c = a + b
 ```
 
+### 常量
+
+使用`cst`关键字声明，常量一旦声明，就不能再修改。
+
+```vine
+cst PI = 3.14
+```
+
+### 字符串
+
+```vine
+let str = "hello, world"
+```
 
 ### 数组
 
