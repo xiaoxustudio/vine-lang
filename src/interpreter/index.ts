@@ -46,21 +46,87 @@ import { BaseDataTag } from "@/utils";
 import TokenUnit from "@/utils/TokenUnit";
 import setObjectData from "@/utils/setObjectData";
 import { ErrorStackManager, ErrorStack } from "@/error";
+import Debugger from "@/debug";
 
 export default class Interpreter {
 	private readonly _context: Environment;
 	private errStackManager = new ErrorStackManager();
+	private debuger: Debugger;
 
-	constructor(context: any) {
+	constructor(context: any, debug?: Debugger) {
 		this._context = context;
+		this.debuger = debug;
+	}
+
+	// 从语句中获取行号
+	private getLineFromStmt(stmt: Node): number | null {
+		// 尝试从不同类型的节点中获取行号
+		if (
+			stmt.id &&
+			typeof stmt.id === "object" &&
+			"value" in stmt.id &&
+			typeof stmt.id.value === "object" &&
+			"line" in stmt.id.value
+		) {
+			return stmt.id.value.line || null;
+		}
+
+		// 对于不同类型的语句，尝试获取行号
+		switch (stmt.type) {
+			case "VariableDeclaration":
+				const varDecl = stmt as VariableDecl;
+				return varDecl.id?.value?.line || null;
+			case "CallExpression":
+				const callExpr = stmt as CallExpr;
+				return this.getLineFromExpr(callExpr.callee);
+			case "ExpressionStatement":
+				const exprStmt = stmt as ExpressionStmt;
+				return this.getLineFromExpr(exprStmt.expression);
+			default:
+				return null;
+		}
+	}
+
+	// 从表达式中获取行号
+	private getLineFromExpr(expr: Expr): number | null {
+		if (expr.type === "Literal") {
+			const literal = expr as Literal;
+			return literal.value?.line || null;
+		}
+		return null;
 	}
 
 	async interpret(expression: ProgramStmt) {
 		const body = expression.body;
-		let returnVal;
+		let returnVal: any;
+
+		// 如果有debugger，在开始时暂停
+		if (this.debuger && this.debuger.paused) {
+			await new Promise<void>(resolve => {
+				this.debuger.on("resume", resolve);
+				this.debuger.setResumeCallback(() => resolve());
+			});
+		}
+
 		try {
 			for (const stmt of body) {
-				returnVal = await this.interpretStmt(stmt, this._context);
+				// 通知debugger当前执行的行号和环境
+				const lineNumber = this.getLineFromStmt(stmt);
+				if (this.debuger && lineNumber) {
+					this.debuger.setCurrentLine(lineNumber);
+					this.debuger.setCurrentEnvironment(this._context);
+				}
+
+				if (!this.debuger?.paused || !this.debuger) {
+					returnVal = await this.interpretStmt(stmt, this._context);
+				} else {
+					await new Promise<void>(resolve => {
+						this.debuger.on("resume", resolve);
+						this.debuger.setResumeCallback(() => resolve());
+					});
+					// 暂停后继续执行当前语句
+					returnVal = await this.interpretStmt(stmt, this._context);
+				}
 			}
 		} catch {
 			this.errStackManager.throwAll();
@@ -212,15 +278,15 @@ export default class Interpreter {
 		return value;
 	}
 
-	interpretSwitchStatement(stmt: SwitchStmt, env: Environment) {
+	async interpretSwitchStatement(stmt: SwitchStmt, env: Environment) {
 		const test = this.interpretExpression(stmt.test, env);
 		for (const case_ of stmt.cases) {
 			if (!case_.test) {
-				return this.interpretBlockStatement(case_.body, env);
+				return await this.interpretBlockStatement(case_.body, env);
 			}
 			const test_ = this.interpretExpression(case_.test, env) as Token;
 			if (test_?.type === test.type && test_?.value === test.value) {
-				return this.interpretBlockStatement(case_.body, env);
+				return await this.interpretBlockStatement(case_.body, env);
 			}
 		}
 		return null;
@@ -238,7 +304,7 @@ export default class Interpreter {
 			for (let i = start; i <= end; i += step) {
 				const context = new Environment(env);
 				context.declareVariable(id as Literal, LiteralFn(i));
-				this.interpretBlockStatement(body, context);
+				await this.interpretBlockStatement(body, context);
 			}
 		} else if (range instanceof Map) {
 			const iterable = Array.isArray(range)
@@ -249,7 +315,7 @@ export default class Interpreter {
 				const context = new Environment(env);
 				context.declareVariable(id as Literal, LiteralFn(key));
 				if (value) context.declareVariable(value as Literal, val);
-				this.interpretBlockStatement(body, context);
+				await this.interpretBlockStatement(body, context);
 			}
 		}
 	}
@@ -285,12 +351,31 @@ export default class Interpreter {
 				.throw();
 		}
 	}
-	interpretBlockStatement(stmt: BlockStmt, env: Environment) {
-		let returnVal;
+	async interpretBlockStatement(stmt: BlockStmt, env: Environment) {
+		let returnVal: any;
 		for (const s of stmt.body) {
-			returnVal = this.interpretStmt(s, env);
-			if (s.type === "ReturnStatement") {
-				break;
+			// 通知debugger当前执行的行号和环境
+			const lineNumber = this.getLineFromStmt(s);
+			if (this.debuger && lineNumber) {
+				this.debuger.setCurrentLine(lineNumber);
+				this.debuger.setCurrentEnvironment(env);
+			}
+
+			if (!this.debuger?.paused || !this.debuger) {
+				returnVal = await this.interpretStmt(s, env);
+				if (s.type === "ReturnStatement") {
+					break;
+				}
+			} else {
+				await new Promise<void>(resolve => {
+					this.debuger.on("resume", resolve);
+					this.debuger.setResumeCallback(() => resolve());
+				});
+				// 暂停后继续执行当前语句
+				returnVal = await this.interpretStmt(s, env);
+				if (s.type === "ReturnStatement") {
+					break;
+				}
 			}
 		}
 		return returnVal;
@@ -302,7 +387,7 @@ export default class Interpreter {
 	) {
 		const body = stmt.body;
 		const args_out = stmt.arguments;
-		const fn = (args: Expr[]) => {
+		const fn = async (args: Expr[]) => {
 			const context = new Environment(env);
 			if (args) {
 				if (!Array.isArray(args)) {
@@ -314,7 +399,7 @@ export default class Interpreter {
 					}
 				}
 			}
-			return this.interpretBlockStatement(body, context);
+			return await this.interpretBlockStatement(body, context);
 		};
 		setObjectData(fn, "type", type); // 设置类型
 		env.declareVariable(stmt.id, fn);
@@ -496,12 +581,12 @@ export default class Interpreter {
 			}
 			case "LambdaFunctionDecl": {
 				const e = expression as LambdaFunctionDecl;
-				const fn = (args: Expr[]) => {
+				const fn = async (args: Expr[]) => {
 					const context = new Environment(env);
 					for (const i in args) {
 						context.declareVariable(e.arguments[i] as any, args[i]);
 					}
-					const v = this.interpretBlockStatement(e.body, context);
+					const v = await this.interpretBlockStatement(e.body, context);
 					return v;
 				};
 				setObjectData(fn, "type", BaseDataTag.FN_LAMBDA);

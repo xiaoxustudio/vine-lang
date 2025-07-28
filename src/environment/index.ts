@@ -14,7 +14,7 @@ export const ModuleList = {
 };
 
 export default class Environment {
-	private Variable: Map<
+	Variable: Map<
 		string,
 		Expr | JSRuntimeFn | JSRuntimeClass | TokenExEnvironment
 	>;
