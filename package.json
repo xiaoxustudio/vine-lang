@@ -1,9 +1,10 @@
 {
 	"name": "vine-lang",
-	"version": "1.0.27",
+	"version": "1.0.28",
 	"description": "a language parser and runtime",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"module": "dist/index.mjs",
 	"keywords": [
 		"utils",
 		"tokenlize",
@@ -11,7 +12,7 @@
 		"ast",
 		"language"
 	],
-	"packageManager": "pnpm@10.12.1",
+	"packageManager": "pnpm@10.13.1",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/xiaoxustudio/vine-lang.git"
@@ -24,14 +25,14 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
-		"prebuild": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs && tsc-alias -p tsconfig.json",
-		"watch": "rollup -c --configPlugin rollup-plugin-typescript2 --bundleConfigAsCjs -w",
-		"dev": "cross-env NODE_ENV=development pnpm prebuild && pnpm prerun",
-		"build": "cross-env NODE_ENV=production pnpm prebuild",
-		"exebuild": "pnpm prebuild && node ./scripts/build.js",
+		"watch": "tsup -w",
+		"prebuild": "cross-env NODE_ENV=development tsup && tsc-alias",
+		"dev": "pnpm prebuild && node dist/index.js",
+		"build": "cross-env NODE_ENV=production tsup",
+		"exebuild": "pnpm build && node ./scripts/build.js",
 		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl",
-		"prerun": "node dist/index.js",
+		"debug": "pnpm dev debug",
 		"docs:dev": "vitepress dev docs",
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs"
@@ -42,16 +43,12 @@
 	"author": "xuran",
 	"license": "MIT",
 	"devDependencies": {
-		"@rollup/plugin-commonjs": "^28.0.6",
-		"@rollup/plugin-node-resolve": "^16.0.1",
-		"@rollup/plugin-replace": "^6.0.2",
-		"@rollup/plugin-typescript": "^12.1.4",
+		"@swc/core": "^1.13.2",
 		"@types/node": "^22.15.29",
 		"@yao-pkg/pkg": "^6.5.1",
 		"cross-env": "^7.0.3",
-		"rollup": "^4.41.1",
-		"rollup-plugin-typescript2": "^0.36.0",
 		"tsc-alias": "^1.8.16",
+		"tsup": "^8.5.0",
 		"typescript": "^5.8.3",
 		"vitepress": "^1.6.3"
 	}
