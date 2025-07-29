@@ -6,6 +6,7 @@ export enum TokenType {
 	operator,
 	keyword,
 	comment,
+	emptyLine,
 	paren, // ()
 	bracket, // []
 	curly, // {}

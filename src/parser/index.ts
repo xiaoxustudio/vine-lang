@@ -33,6 +33,7 @@ import {
 	UseSpecifier,
 	VariableDecl,
 	WaitStmt,
+	EmptyLineStmt,
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
@@ -109,6 +110,8 @@ export default class Parser {
 	parseStatement() {
 		const token = this.at();
 		switch (token.type) {
+			case TokenType.emptyLine:
+				return this.parseEmptyLineStmt();
 			case TokenType.use:
 				return this.parseUse();
 			case TokenType.comment:
@@ -137,6 +140,10 @@ export default class Parser {
 			default:
 				return this.parseExpression();
 		}
+	}
+
+	parseEmptyLineStmt() {
+		return { type: "EmptyLine", id: this.eat() } as EmptyLineStmt;
 	}
 
 	parseComment() {
@@ -333,13 +340,8 @@ export default class Parser {
 	}
 
 	parseIdentifier(): Expr {
-		const token = this.at();
-		if (token.type !== TokenType.identifier) {
-			this.errStackManager
-				.addError(new ErrorStack(`Unexpected token: ${token.type}`))
-				.throw();
-		}
-		return { value: this.eat(), type: "Literal" } as Literal;
+		const token = this.match(TokenType.identifier);
+		return { value: token, type: "Literal" } as Literal;
 	}
 
 	parseString() {
@@ -792,6 +794,9 @@ export default class Parser {
 			case TokenType.default:
 			case TokenType.case:
 				return this.parseSwitchCase();
+			case TokenType.emptyLine:
+				this.eat();
+				return this.parsePrimary();
 			default:
 				this.errStackManager
 					.addError(

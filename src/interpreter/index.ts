@@ -82,9 +82,51 @@ export default class Interpreter {
 			case "ExpressionStatement":
 				const exprStmt = stmt as ExpressionStmt;
 				return this.getLineFromExpr(exprStmt.expression);
-			default:
+			case "ForStatement":
+				const forStmt = stmt as ForStmt;
+				return this.getLineFromExpr(forStmt.init) || null;
+			case "IfStatement":
+				const ifStmt = stmt as IfStmt;
+				return this.getLineFromExpr(ifStmt.test);
+			case "BlockStatement":
+				const blockStmt = stmt as BlockStmt;
+				// 对于块语句，尝试获取第一个子语句的行号
+				if (blockStmt.body && blockStmt.body.length > 0) {
+					return this.getLineFromStmt(blockStmt.body[0]);
+				}
 				return null;
+			default:
+				// 尝试从任何可能的子节点获取行号
+				return this.extractLineFromAnyNode(stmt);
 		}
+	}
+
+	// 尝试从任意节点提取行号
+	private extractLineFromAnyNode(node: any): number | null {
+		if (!node || typeof node !== 'object') return null;
+
+		// 检查直接的line属性
+		if (node.line && typeof node.line === 'number') {
+			return node.line;
+		}
+
+		// 检查value.line
+		if (node.value && typeof node.value === 'object' && node.value.line) {
+			return node.value.line;
+		}
+
+		// 递归检查子属性
+		for (const key in node) {
+			if (key === 'parent' || key === 'env') continue; // 避免循环引用
+
+			const value = node[key];
+			if (value && typeof value === 'object') {
+				const line = this.extractLineFromAnyNode(value);
+				if (line) return line;
+			}
+		}
+
+		return null;
 	}
 
 	// 从表达式中获取行号
@@ -115,18 +157,18 @@ export default class Interpreter {
 				if (this.debuger && lineNumber) {
 					this.debuger.setCurrentLine(lineNumber);
 					this.debuger.setCurrentEnvironment(this._context);
+
+					// 如果在断点处暂停，等待用户命令
+					if (this.debuger.paused) {
+						await new Promise<void>(resolve => {
+							this.debuger.on("resume", resolve);
+							this.debuger.setResumeCallback(() => resolve());
+						});
+					}
 				}
 
-				if (!this.debuger?.paused || !this.debuger) {
-					returnVal = await this.interpretStmt(stmt, this._context);
-				} else {
-					await new Promise<void>(resolve => {
-						this.debuger.on("resume", resolve);
-						this.debuger.setResumeCallback(() => resolve());
-					});
-					// 暂停后继续执行当前语句
-					returnVal = await this.interpretStmt(stmt, this._context);
-				}
+				// 执行当前语句
+				returnVal = await this.interpretStmt(stmt, this._context);
 			}
 		} catch {
 			this.errStackManager.throwAll();
@@ -148,6 +190,9 @@ export default class Interpreter {
 				return this.interpretMemberExpression(stmt as MemberExpr, env);
 			case "AssignmentExpression":
 				return this.interpretAssignmentExpression(stmt as AssignmentExpr, env);
+			case "EmptyLine": {
+				return;
+			}
 			case "CommentStatement": {
 				return;
 			}
@@ -359,23 +404,20 @@ export default class Interpreter {
 			if (this.debuger && lineNumber) {
 				this.debuger.setCurrentLine(lineNumber);
 				this.debuger.setCurrentEnvironment(env);
+
+				// 如果在断点处暂停，等待用户命令
+				if (this.debuger.paused) {
+					await new Promise<void>(resolve => {
+						this.debuger.on("resume", resolve);
+						this.debuger.setResumeCallback(() => resolve());
+					});
+				}
 			}
 
-			if (!this.debuger?.paused || !this.debuger) {
-				returnVal = await this.interpretStmt(s, env);
-				if (s.type === "ReturnStatement") {
-					break;
-				}
-			} else {
-				await new Promise<void>(resolve => {
-					this.debuger.on("resume", resolve);
-					this.debuger.setResumeCallback(() => resolve());
-				});
-				// 暂停后继续执行当前语句
-				returnVal = await this.interpretStmt(s, env);
-				if (s.type === "ReturnStatement") {
-					break;
-				}
+			// 执行当前语句
+			returnVal = await this.interpretStmt(s, env);
+			if (s.type === "ReturnStatement") {
+				break;
 			}
 		}
 		return returnVal;

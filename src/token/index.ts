@@ -5,10 +5,15 @@ export const isAlpha = (ch: string) => /[\u4e00-\u9fa5a-zA-Z_]/.test(ch);
 export const isOperator = (ch: string) => /[+\-*/%=<>!&|]/.test(ch);
 export const isKeyword = (word: string) => Object.keys(Keywords).includes(word);
 export const isComment = (ch: string) => ch === "#";
-export const isSkip = (ch: string) => [" ", "\t", "\r"].includes(ch);
+export const isSkip = (ch: string) => [" ", "\t"].includes(ch);
+export const isNextLine = (ch: string) => ["\r", "\n", "\r\n"].includes(ch);
 export const isString = (ch: string) => ["'", '"'].includes(ch);
 
-export function tokenlize(code: string): Token[] {
+export interface TokenlizeConfig {
+	skipEmptyLine?: boolean; // 跳过空行
+}
+
+export function tokenlize(code: string, config?: TokenlizeConfig): Token[] {
 	const tokens: Token[] = [];
 	const lines = code.split("\n");
 	let lineNum = 1;
@@ -25,11 +30,14 @@ export function tokenlize(code: string): Token[] {
 		const line = lines[i];
 		for (let j = 0; j < line.length; j++) {
 			const ch = line[j];
-
 			if (inMultilineComment) {
-				if (ch === '*' && j + 1 < line.length && line[j + 1] === '#') {
-					multilineCommentContent += '*#';
-					addToken(TokenType.comment, multilineCommentContent, multilineStartCol);
+				if (ch === "*" && j + 1 < line.length && line[j + 1] === "#") {
+					multilineCommentContent += "*#";
+					addToken(
+						TokenType.comment,
+						multilineCommentContent,
+						multilineStartCol
+					);
 					inMultilineComment = false;
 					multilineCommentContent = "";
 					j++;
@@ -40,7 +48,6 @@ export function tokenlize(code: string): Token[] {
 				colNum++;
 				continue;
 			}
-
 			if (isDigit(ch)) {
 				const startCol = colNum;
 				let num = ch;
@@ -78,7 +85,7 @@ export function tokenlize(code: string): Token[] {
 			} else if (isComment(ch)) {
 				const startCol = colNum;
 				// Check for multiline comment start
-				if (j + 1 < line.length && line[j + 1] === '*') {
+				if (j + 1 < line.length && line[j + 1] === "*") {
 					inMultilineComment = true;
 					multilineCommentContent = "#*";
 					multilineStartCol = startCol;
@@ -130,6 +137,13 @@ export function tokenlize(code: string): Token[] {
 				colNum += str.length + 2; // 加2是因为要包含引号
 			} else if (isSkip(ch)) {
 				colNum++;
+			} else if (isNextLine(ch)) {
+				if (config && config.skipEmptyLine) {
+					colNum++;
+				} else {
+					addToken(TokenType.emptyLine, ch, colNum);
+					colNum++;
+				}
 			} else {
 				throw `Unknown char : ${ch} at line ${lineNum}, column ${colNum}`;
 			}

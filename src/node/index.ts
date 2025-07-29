@@ -5,6 +5,7 @@ export type NodeType =
 	| "Literal"
 	| "Property"
 	| "CommentStatement"
+	| "EmptyLine"
 	/* Declaration */
 	| "LambdaFunctionDecl"
 	| "FunctionDeclaration"
@@ -62,6 +63,10 @@ export interface Property extends Node {
 export interface TemplateElement extends Node {
 	value: Literal;
 	type: "TemplateElement";
+}
+
+export interface EmptyLineStmt extends Node {
+	type: "EmptyLine";
 }
 
 /* ================================== Declaration ================================== */

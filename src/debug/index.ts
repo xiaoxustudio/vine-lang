@@ -13,6 +13,7 @@ class Debugger {
 	public pausedCallback: (value: unknown) => void;
 	private resumeCallback: () => void;
 	private currentEnvironment: Environment | null = null;
+	private resetCallback: () => void;
 
 	constructor() {
 		this.paused = true;
@@ -37,7 +38,9 @@ class Debugger {
 			const isBk = this.beakpoint
 				.get(this.filePath)
 				.includes(parseFloat(lineNumber));
-			return `${isBk ? `\x1b[31m${lineNumber}\x1b[0m` : lineNumber}  | ${l}`;
+			return `${
+				isBk ? `\x1B[1m\x1b[31m${lineNumber}\x1b[0m\x1b[0m` : lineNumber
+			}  | ${l}`;
 		});
 		return formattedLines.join("\n");
 	}
@@ -63,10 +66,19 @@ class Debugger {
 							if (!this.beakpoint.has(this.filePath)) {
 								this.beakpoint.set(this.filePath, []);
 							}
-							this.beakpoint.get(this.filePath)?.push(lineNumber);
-							console.log(
-								`Breakpoint set at line ${lineNumber} in ${this.filePath}`
-							);
+
+							// 检查行号是否有效
+							if (this.isValidLineNumber(lineNumber)) {
+								this.beakpoint.get(this.filePath)?.push(lineNumber);
+
+								console.log(
+									`Breakpoint set at line ${lineNumber} in ${this.filePath}`
+								);
+							} else {
+								console.log(
+									`Invalid line number ${lineNumber}. File has ${this.getFileLineCount()} lines.`
+								);
+							}
 						} else {
 							console.log("Please provide a valid line number.");
 						}
@@ -146,18 +158,29 @@ class Debugger {
 					this.showVariables(commandArr[1]);
 					this.rl.prompt();
 					return;
+				case "reset":
+				case "r":
+					this.resetDebugEnvironment();
+					this.rl.prompt();
+					return;
+				case "cls":
+					process.stdout.write("\x1Bc");
+					this.rl.prompt();
+					return;
 				case "help":
 				case "h":
 					console.log(`Available commands:
-  b <line>     - Set breakpoint at line
-  n, next      - Continue to next breakpoint
-  l, list      - List all breakpoints
-  c [line]     - Clear breakpoint at line (or all if no line specified)
-  w, where     - Show current line
-  var [name]   - Show all variables or specific variable
-  source       - Show source code
-  exit         - Exit debugger
-  h, help      - Show this help`);
+	b <line>     - Set breakpoint at line
+	n, next      - Continue to next breakpoint
+	l, list      - List all breakpoints
+	c [line]     - Clear breakpoint at line (or all if no line specified)
+	w, where     - Show current line
+	var [name]   - Show all variables or specific variable
+	reset, r     - Reset debug environment (clear all breakpoints and restart)
+	source       - Show source code
+	exit         - Exit debugger
+	cls         - clear Terminal display content
+	h, help      - Show this help`);
 					this.rl.prompt();
 					return;
 				default:
@@ -187,10 +210,45 @@ class Debugger {
 	// 设置当前执行行号并检查是否需要暂停
 	setCurrentLine(line: number) {
 		this.currentLine = line;
-		if (this.shouldPauseAtLine(line)) {
+		// 检查当前行或附近的行是否有断点
+		if (this.shouldPauseAtLineOrNearby(line)) {
 			this.paused = true;
 			console.log(`\nPaused at breakpoint at line ${line}`);
 			this.rl.prompt();
+		}
+	}
+
+	// 检查当前行或附近行是否有断点（处理空行情况）
+	private shouldPauseAtLineOrNearby(line: number): boolean {
+		if (!this.filePath) return false;
+		const breakpoints = this.beakpoint.get(this.filePath) || [];
+
+		// 首先检查精确匹配
+		if (breakpoints.includes(line)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	// 检查行号是否有效
+	private isValidLineNumber(lineNumber: number): boolean {
+		try {
+			const text = readFileSync(this.filePath, "utf-8");
+			const lines = text.split("\n");
+			return lineNumber > 0 && lineNumber <= lines.length;
+		} catch {
+			return false;
+		}
+	}
+
+	// 获取文件行数
+	private getFileLineCount(): number {
+		try {
+			const text = readFileSync(this.filePath, "utf-8");
+			return text.split("\n").length;
+		} catch {
+			return 0;
 		}
 	}
 
@@ -213,9 +271,45 @@ class Debugger {
 		this.resumeCallback = callback;
 	}
 
+	// 设置重置回调
+	setResetCallback(callback: () => void) {
+		this.resetCallback = callback;
+	}
+
 	// 设置当前环境
 	setCurrentEnvironment(env: Environment) {
 		this.currentEnvironment = env;
+	}
+
+	// 重置调试环境
+	resetDebugEnvironment() {
+		console.log("Resetting debug environment...");
+
+		// 清除所有断点
+		this.beakpoint.clear();
+		this.beakpoint.set(this.filePath, []);
+		console.log("✓ All breakpoints cleared");
+
+		// 重置当前行号
+		this.currentLine = 0;
+		console.log("✓ Current line reset");
+
+		// 重置暂停状态
+		this.paused = true;
+		console.log("✓ Debug state reset to paused");
+
+		// 清除当前环境
+		this.currentEnvironment = null;
+		console.log("✓ Environment cleared");
+
+		if (this.resetCallback) {
+			console.log("✓ Restarting program execution...");
+			this.resetCallback();
+		}
+
+		console.log(
+			"Debug environment has been reset. Use 'n' to continue execution from the beginning."
+		);
 	}
 
 	// 显示变量
