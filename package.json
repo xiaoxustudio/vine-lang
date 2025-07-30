@@ -28,7 +28,7 @@
 		"watch": "tsup -w",
 		"prebuild": "cross-env NODE_ENV=development tsup && tsc-alias",
 		"dev": "pnpm prebuild && node dist/index.js",
-		"build": "cross-env NODE_ENV=production tsup",
+		"build": "cross-env NODE_ENV=production tsup && tsc-alias",
 		"exebuild": "pnpm build && node ./scripts/build.js",
 		"ipt": "pnpm dev ipt",
 		"repl": "pnpm dev repl",
