@@ -45,11 +45,15 @@
 	"devDependencies": {
 		"@swc/core": "^1.13.2",
 		"@types/node": "^22.15.29",
+		"@types/ws": "^8.18.1",
 		"@yao-pkg/pkg": "^6.5.1",
 		"cross-env": "^7.0.3",
 		"tsc-alias": "^1.8.16",
 		"tsup": "^8.5.0",
 		"typescript": "^5.8.3",
 		"vitepress": "^1.6.3"
+	},
+	"dependencies": {
+		"ws": "^8.18.3"
 	}
 }

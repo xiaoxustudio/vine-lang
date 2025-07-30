@@ -1,8 +1,13 @@
 import { readFileSync } from "fs";
 import { Interface } from "readline";
 import readline from "readline";
+import { WebSocketServer as Server, WebSocket } from "ws";
 import Environment from "@/environment";
 import toRealValue from "@/utils/toRealValue";
+
+export interface DebuggerConfig {
+	port: number;
+}
 
 class Debugger {
 	private rl: Interface;
@@ -14,14 +19,43 @@ class Debugger {
 	private resumeCallback: () => void;
 	private currentEnvironment: Environment | null = null;
 	private resetCallback: () => void;
+	private server: Server;
+	private clients: Set<WebSocket>;
+	private config: DebuggerConfig;
+	public static defaultConfig = { port: 5151 } as DebuggerConfig;
 
-	constructor() {
+	constructor(cfg: DebuggerConfig) {
 		this.paused = true;
 		this.rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
 			prompt: "debug > ",
 		});
+		this.config = { ...Debugger.defaultConfig, ...cfg } as DebuggerConfig;
+		this.clients = new Set();
+		this.startServer();
+	}
+
+	startServer() {
+		this.server = new Server({ port: this.config.port });
+		this.server.on("connection", con => {
+			if (con.readyState === con.OPEN) {
+				this.clients.add(con);
+				con.on("close", () => {
+					this.clients.delete(con);
+				});
+				con.on("message", e => {
+					this.emitCommand(JSON.parse(e.toString()));
+				});
+			}
+		});
+		this.server.eventNames;
+		console.log("server listening on port " + this.config.port);
+	}
+
+	stopServer() {
+		this.server.close();
+		this.clients.clear();
 	}
 
 	setFile(filePath: string) {
@@ -45,131 +79,168 @@ class Debugger {
 		return formattedLines.join("\n");
 	}
 
-	start() {
-		this.rl.prompt();
-		this.rl.on("line", (line: string) => {
-			const commandArr = line
-				.trim()
-				.split(/\s/)
-				.filter(v => v !== " ");
-			const command = commandArr[0];
-			switch (command) {
-				case "exit":
-					this.rl.close();
-					return;
-				case "b":
-				case "breakpoint":
-				case "break":
-					if (this.filePath) {
-						const lineNumber = parseInt(commandArr[1], 10);
-						if (!isNaN(lineNumber)) {
-							if (!this.beakpoint.has(this.filePath)) {
-								this.beakpoint.set(this.filePath, []);
-							}
+	emitClientData(data: any) {
+		this.clients.forEach(con => {
+			if (con.readyState === con.OPEN) {
+				con.send(JSON.stringify(data));
+			}
+		});
+	}
 
-							// 检查行号是否有效
-							if (this.isValidLineNumber(lineNumber)) {
-								this.beakpoint.get(this.filePath)?.push(lineNumber);
+	emitCommand(commandArr = []) {
+		if (!Array.isArray(commandArr)) {
+			commandArr = [(commandArr as any).key, ...(commandArr as any).args];
+		}
+		if (!commandArr.length) return;
 
-								console.log(
-									`Breakpoint set at line ${lineNumber} in ${this.filePath}`
-								);
-							} else {
-								console.log(
-									`Invalid line number ${lineNumber}. File has ${this.getFileLineCount()} lines.`
-								);
-							}
-						} else {
-							console.log("Please provide a valid line number.");
-						}
-					} else {
-						console.log("No file set for debugging.");
-					}
-					this.rl.prompt();
-					return;
-				case "n":
-				case "next":
-					if (this.paused) {
-						this.paused = false;
-						console.log("Continuing execution...");
-						this.pausedCallback?.(true);
-						if (this.resumeCallback) {
-							this.resumeCallback();
-						}
-					} else {
-						console.log("Program is not paused.");
-					}
-					return;
-				case "src":
-				case "source":
-					if (this.filePath) {
-						console.log(`Contents of ${this.filePath}:\n${this.getContent()}`);
-					} else {
-						console.log("No file set for debugging.");
-					}
-					this.rl.prompt();
-					return;
-				case "list":
-				case "l":
-					if (this.filePath) {
-						const breakpoints = this.beakpoint.get(this.filePath) || [];
-						if (breakpoints.length > 0) {
-							console.log(`Breakpoints in ${this.filePath}:`);
-							breakpoints.forEach(line => console.log(`  Line ${line}`));
-						} else {
-							console.log("No breakpoints set.");
-						}
-					} else {
-						console.log("No file set for debugging.");
-					}
-					this.rl.prompt();
-					return;
-				case "clear":
-				case "c":
-					if (this.filePath) {
-						const lineNumber = parseInt(commandArr[1], 10);
-						if (!isNaN(lineNumber)) {
-							const breakpoints = this.beakpoint.get(this.filePath) || [];
-							const index = breakpoints.indexOf(lineNumber);
-							if (index > -1) {
-								breakpoints.splice(index, 1);
-								console.log(`Breakpoint removed from line ${lineNumber}`);
-							} else {
-								console.log(`No breakpoint at line ${lineNumber}`);
-							}
-						} else {
-							// 清除所有断点
+		const command = commandArr[0];
+		switch (command) {
+			case "exit":
+				this.rl.close();
+				return;
+			case "b":
+			case "breakpoint":
+			case "break":
+				if (this.filePath) {
+					const lineNumber = parseInt(commandArr[1], 10);
+					if (!isNaN(lineNumber)) {
+						if (!this.beakpoint.has(this.filePath)) {
 							this.beakpoint.set(this.filePath, []);
-							console.log("All breakpoints cleared.");
+						}
+
+						// 检查行号是否有效
+						if (this.isValidLineNumber(lineNumber)) {
+							this.beakpoint.get(this.filePath)?.push(lineNumber);
+							this.emitClientData({
+								type: "server_breakpoint",
+								filePath: this.filePath,
+								lineNumber,
+							});
+
+							console.log(
+								`Breakpoint set at line ${lineNumber} in ${this.filePath}`
+							);
+						} else {
+							console.log(
+								`Invalid line number ${lineNumber}. File has ${this.getFileLineCount()} lines.`
+							);
 						}
 					} else {
-						console.log("No file set for debugging.");
+						console.log("Please provide a valid line number.");
 					}
-					this.rl.prompt();
-					return;
-				case "where":
-				case "w":
-					console.log(`Current line: ${this.currentLine}`);
-					this.rl.prompt();
-					return;
-				case "var":
-				case "vars":
-				case "v":
-					this.showVariables(commandArr[1]);
-					this.rl.prompt();
-					return;
-				case "reset":
-				case "r":
-					this.resetDebugEnvironment();
-					this.rl.prompt();
-					return;
-				case "cls":
-					process.stdout.write("\x1Bc");
-					this.rl.prompt();
-					return;
-				case "help":
-				case "h":
-					console.log(`Available commands:
+				} else {
+					console.log("No file set for debugging.");
+				}
+				this.rl.prompt();
+				return;
+			case "n":
+			case "next":
+				if (this.paused) {
+					this.paused = false;
+					console.log("Continuing execution...");
+					this.pausedCallback?.(true);
+					if (this.resumeCallback) {
+						this.resumeCallback();
+					}
+					this.emitClientData({
+						type: "server_next",
+						filePath: this.filePath,
+						currentLine: this.currentLine,
+					});
+				} else {
+					console.log("Program is not paused.");
+				}
+				return;
+			case "src":
+			case "source":
+				if (this.filePath) {
+					const content = this.getContent();
+					console.log(`Contents of ${this.filePath}:\n${content}`);
+					this.emitClientData({
+						type: "server_source",
+						filePath: this.filePath,
+						content,
+					});
+				} else {
+					console.log("No file set for debugging.");
+				}
+				this.rl.prompt();
+				return;
+			case "list":
+			case "l":
+				if (this.filePath) {
+					const breakpoints = this.beakpoint.get(this.filePath) || [];
+					if (breakpoints.length > 0) {
+						console.log(`Breakpoints in ${this.filePath}:`);
+						breakpoints.forEach(line => console.log(`  Line ${line}`));
+						this.emitClientData({
+							type: "server_source",
+							filePath: this.filePath,
+							breakpoints: Object.fromEntries(breakpoints.entries()),
+						});
+					} else {
+						console.log("No breakpoints set.");
+					}
+				} else {
+					console.log("No file set for debugging.");
+				}
+				this.rl.prompt();
+				return;
+			case "clear":
+			case "c":
+				if (this.filePath) {
+					const lineNumber = parseInt(commandArr[1], 10);
+					if (!isNaN(lineNumber)) {
+						const breakpoints = this.beakpoint.get(this.filePath) || [];
+						const index = breakpoints.indexOf(lineNumber);
+						if (index > -1) {
+							breakpoints.splice(index, 1);
+							console.log(`Breakpoint removed from line ${lineNumber}`);
+						} else {
+							console.log(`No breakpoint at line ${lineNumber}`);
+						}
+					} else {
+						// 清除所有断点
+						this.beakpoint.set(this.filePath, []);
+						console.log("All breakpoints cleared.");
+					}
+				} else {
+					console.log("No file set for debugging.");
+				}
+				this.rl.prompt();
+				return;
+			case "where":
+			case "w":
+				console.log(`Current line: ${this.currentLine}`);
+				this.emitClientData({
+					type: "server_where",
+					filePath: this.filePath,
+					currentLine: this.currentLine,
+				});
+				this.rl.prompt();
+				return;
+			case "var":
+			case "vars":
+			case "v":
+				this.showVariables(commandArr[1]);
+				this.rl.prompt();
+				return;
+			case "reset":
+			case "r":
+				this.resetDebugEnvironment();
+				this.emitClientData({
+					type: "server_reset",
+					filePath: this.filePath,
+				});
+				this.rl.prompt();
+				return;
+			case "cls":
+				process.stdout.write("\x1Bc");
+				this.rl.prompt();
+				return;
+			case "help":
+			case "h":
+				console.log(`Available commands:
 	b <line>     - Set breakpoint at line
 	n, next      - Continue to next breakpoint
 	l, list      - List all breakpoints
@@ -181,15 +252,29 @@ class Debugger {
 	exit         - Exit debugger
 	cls         - clear Terminal display content
 	h, help      - Show this help`);
-					this.rl.prompt();
-					return;
-				default:
-					console.log(
-						`Unknown command: ${command}. Type 'help' for available commands.`
-					);
-					this.rl.prompt();
-					return;
-			}
+				this.rl.prompt();
+				return;
+			default:
+				console.log(
+					`Unknown command: ${command}. Type 'help' for available commands.`
+				);
+				this.emitClientData({
+					type: "server_unknown_command",
+					command,
+				});
+				this.rl.prompt();
+				return;
+		}
+	}
+
+	start() {
+		this.rl.prompt();
+		this.rl.on("line", (line: string) => {
+			const commandArr = line
+				.trim()
+				.split(/\s/)
+				.filter(v => v !== " ");
+			this.emitCommand(commandArr);
 		});
 
 		this.rl.on("close", () => {
@@ -336,6 +421,11 @@ class Debugger {
 					console.log("No variables in current scope.");
 				} else {
 					console.log("Variables in current scope:");
+					this.emitClientData({
+						type: "server_vars",
+						filePath: this.filePath,
+						vars: Object.fromEntries(variables.entries()),
+					});
 					for (const [name, value] of variables) {
 						// 过滤掉内置变量
 						if (!this.isBuiltinVariable(name)) {
