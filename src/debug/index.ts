@@ -24,14 +24,16 @@ class Debugger {
 	private config: DebuggerConfig;
 	public static defaultConfig = { port: 5151 } as DebuggerConfig;
 
-	constructor(cfg: DebuggerConfig) {
+	constructor(cfg?: DebuggerConfig) {
 		this.paused = true;
 		this.rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
 			prompt: "debug > ",
 		});
-		this.config = { ...Debugger.defaultConfig, ...cfg } as DebuggerConfig;
+		this.config = cfg
+			? ({ ...Debugger.defaultConfig, ...cfg } as DebuggerConfig)
+			: Debugger.defaultConfig;
 		this.clients = new Set();
 		this.startServer();
 	}
