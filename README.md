@@ -15,6 +15,10 @@
 
 `Vine` is an interpreted programming language designed for ease of use and learning. It is a simple language built on TypeScript but features a more modern syntax and functionality.
 
+<img width="300"  alt="image" src="https://github.com/user-attachments/assets/404b5727-198d-4a49-be55-af4ed1d5e188" />
+<img  width="260" alt="image" src="https://github.com/user-attachments/assets/c7cdbcb1-6cd5-47ae-95d4-cd9f023bcbac" />
+<img width="200"  alt="image" src="https://github.com/user-attachments/assets/bca31030-00f2-4a1e-941e-70cf0e80fe2c" />
+
 # Install
 
 ```bash
