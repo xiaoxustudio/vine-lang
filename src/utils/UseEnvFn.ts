@@ -10,6 +10,6 @@ export default function UseEnvFn(env: Environment) {
 		type: TokenType.env,
 		value: env,
 		line: 0,
-		column: 0,
+		column: 0
 	} as TokenExEnvironment;
 }

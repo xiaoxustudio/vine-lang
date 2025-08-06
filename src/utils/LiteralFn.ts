@@ -24,6 +24,6 @@ export default function LiteralFn(
 	})();
 	return {
 		type: "Literal",
-		value: { column: 0, line: 0, value: s, type },
+		value: { column: 0, line: 0, value: s, type }
 	} as Literal;
 }

@@ -44,7 +44,7 @@ const date: VineDateModule = {
 	},
 	now() {
 		return LiteralFn(Date.now());
-	},
+	}
 };
 date.reset = function () {
 	date.__obj = new Date();

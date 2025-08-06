@@ -28,13 +28,13 @@ export function replProgram() {
 			const output = toRealValue(res);
 			const strOutput = builInObjectToString(output);
 			return strOutput;
-		},
+		}
 	});
 
 	replServer.defineCommand("exit", {
 		help: "Exit the Vine REPL",
 		action: () => {
 			replServer.close();
-		},
+		}
 	});
 }

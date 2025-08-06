@@ -41,7 +41,7 @@ export enum TokenType {
 	switch,
 	case,
 	default,
-	break,
+	break
 }
 
 export type JSRuntimeFn = (args?: any) => void;
@@ -80,5 +80,5 @@ export const Keywords = {
 	switch: TokenType.switch,
 	case: TokenType.case,
 	default: TokenType.default,
-	break: TokenType.break,
+	break: TokenType.break
 };

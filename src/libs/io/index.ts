@@ -44,7 +44,10 @@ export default {
 		return LiteralFn(
 			fs
 				.readFileSync(
-					path.join(path.dirname(this.filePath), Export(pathName) as string),
+					path.join(
+						path.dirname(this.filePath),
+						Export(pathName) as string
+					),
 					"utf8"
 				)
 				.toString()
@@ -93,5 +96,5 @@ export default {
 		infoMap.set("isFIFO", info.isFIFO());
 		infoMap.set("isSocket", info.isSocket());
 		return infoMap;
-	},
+	}
 } as VineIOModule;

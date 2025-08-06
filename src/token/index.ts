@@ -22,7 +22,11 @@ export function tokenlize(code: string, config?: TokenlizeConfig): Token[] {
 	let multilineCommentContent = "";
 	let multilineStartCol = 1;
 
-	const addToken = (type: TokenType, value: string, tokenStartCol: number) => {
+	const addToken = (
+		type: TokenType,
+		value: string,
+		tokenStartCol: number
+	) => {
 		tokens.push({ type, value, line: lineNum, column: tokenStartCol });
 	};
 
@@ -63,7 +67,10 @@ export function tokenlize(code: string, config?: TokenlizeConfig): Token[] {
 				const startCol = colNum;
 				let word = ch;
 				j++;
-				while (j < line.length && (isAlpha(line[j]) || isDigit(line[j]))) {
+				while (
+					j < line.length &&
+					(isAlpha(line[j]) || isDigit(line[j]))
+				) {
 					word += line[j];
 					j++;
 				}

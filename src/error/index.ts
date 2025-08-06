@@ -6,7 +6,7 @@ export enum ErrorType {
 	// 通用错误
 	UNKNOWN = "UNKNOWN",
 	// 变量无法找到
-	VARIABLE_NOT_FOUND = "VARIABLE_NOT_FOUND",
+	VARIABLE_NOT_FOUND = "VARIABLE_NOT_FOUND"
 }
 
 export enum ErrorCode {
@@ -15,7 +15,7 @@ export enum ErrorCode {
 	// 语法错误
 	SYNTAX_ERROR = "SYNTAX_ERROR",
 	// 运行时错误
-	RUNTIME_ERROR = "RUNTIME_ERROR",
+	RUNTIME_ERROR = "RUNTIME_ERROR"
 }
 
 export class ErrorStack extends Error {
@@ -43,7 +43,7 @@ export class ErrorStack extends Error {
 		this.cause = {
 			filePath: env?.filePath || null,
 			line: pos.line,
-			column: pos.column,
+			column: pos.column
 		};
 	}
 	setCode(code: ErrorCode) {
@@ -71,7 +71,7 @@ export class ErrorStackManager {
 		if (this.errorStacks.length === 0) {
 			return;
 		}
-		this.errorStacks.forEach(error => {
+		this.errorStacks.forEach((error) => {
 			throw error;
 		});
 	}

@@ -29,7 +29,7 @@ class Debugger {
 		this.rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
-			prompt: "debug > ",
+			prompt: "debug > "
 		});
 		this.config = cfg
 			? ({ ...Debugger.defaultConfig, ...cfg } as DebuggerConfig)
@@ -40,13 +40,13 @@ class Debugger {
 
 	startServer() {
 		this.server = new Server({ port: this.config.port });
-		this.server.on("connection", con => {
+		this.server.on("connection", (con) => {
 			if (con.readyState === con.OPEN) {
 				this.clients.add(con);
 				con.on("close", () => {
 					this.clients.delete(con);
 				});
-				con.on("message", e => {
+				con.on("message", (e) => {
 					this.emitCommand(JSON.parse(e.toString()));
 				});
 			}
@@ -82,7 +82,7 @@ class Debugger {
 	}
 
 	emitClientData(data: any) {
-		this.clients.forEach(con => {
+		this.clients.forEach((con) => {
 			if (con.readyState === con.OPEN) {
 				con.send(JSON.stringify(data));
 			}
@@ -116,7 +116,7 @@ class Debugger {
 							this.emitClientData({
 								type: "server_breakpoint",
 								filePath: this.filePath,
-								lineNumber,
+								lineNumber
 							});
 
 							console.log(
@@ -147,7 +147,7 @@ class Debugger {
 					this.emitClientData({
 						type: "server_next",
 						filePath: this.filePath,
-						currentLine: this.currentLine,
+						currentLine: this.currentLine
 					});
 				} else {
 					console.log("Program is not paused.");
@@ -161,7 +161,7 @@ class Debugger {
 					this.emitClientData({
 						type: "server_source",
 						filePath: this.filePath,
-						content,
+						content
 					});
 				} else {
 					console.log("No file set for debugging.");
@@ -174,11 +174,15 @@ class Debugger {
 					const breakpoints = this.beakpoint.get(this.filePath) || [];
 					if (breakpoints.length > 0) {
 						console.log(`Breakpoints in ${this.filePath}:`);
-						breakpoints.forEach(line => console.log(`  Line ${line}`));
+						breakpoints.forEach((line) =>
+							console.log(`  Line ${line}`)
+						);
 						this.emitClientData({
 							type: "server_source",
 							filePath: this.filePath,
-							breakpoints: Object.fromEntries(breakpoints.entries()),
+							breakpoints: Object.fromEntries(
+								breakpoints.entries()
+							)
 						});
 					} else {
 						console.log("No breakpoints set.");
@@ -193,11 +197,14 @@ class Debugger {
 				if (this.filePath) {
 					const lineNumber = parseInt(commandArr[1], 10);
 					if (!isNaN(lineNumber)) {
-						const breakpoints = this.beakpoint.get(this.filePath) || [];
+						const breakpoints =
+							this.beakpoint.get(this.filePath) || [];
 						const index = breakpoints.indexOf(lineNumber);
 						if (index > -1) {
 							breakpoints.splice(index, 1);
-							console.log(`Breakpoint removed from line ${lineNumber}`);
+							console.log(
+								`Breakpoint removed from line ${lineNumber}`
+							);
 						} else {
 							console.log(`No breakpoint at line ${lineNumber}`);
 						}
@@ -217,7 +224,7 @@ class Debugger {
 				this.emitClientData({
 					type: "server_where",
 					filePath: this.filePath,
-					currentLine: this.currentLine,
+					currentLine: this.currentLine
 				});
 				this.rl.prompt();
 				return;
@@ -232,7 +239,7 @@ class Debugger {
 				this.resetDebugEnvironment();
 				this.emitClientData({
 					type: "server_reset",
-					filePath: this.filePath,
+					filePath: this.filePath
 				});
 				this.rl.prompt();
 				return;
@@ -262,7 +269,7 @@ class Debugger {
 				);
 				this.emitClientData({
 					type: "server_unknown_command",
-					command,
+					command
 				});
 				this.rl.prompt();
 				return;
@@ -275,7 +282,7 @@ class Debugger {
 			const commandArr = line
 				.trim()
 				.split(/\s/)
-				.filter(v => v !== " ");
+				.filter((v) => v !== " ");
 			this.emitCommand(commandArr);
 		});
 
@@ -407,7 +414,10 @@ class Debugger {
 		}
 
 		try {
-			const variables = this.currentEnvironment.Variable as Map<string, any>;
+			const variables = this.currentEnvironment.Variable as Map<
+				string,
+				any
+			>;
 
 			if (varName) {
 				// 显示特定变量
@@ -426,7 +436,7 @@ class Debugger {
 					this.emitClientData({
 						type: "server_vars",
 						filePath: this.filePath,
-						vars: Object.fromEntries(variables.entries()),
+						vars: Object.fromEntries(variables.entries())
 					});
 					for (const [name, value] of variables) {
 						// 过滤掉内置变量

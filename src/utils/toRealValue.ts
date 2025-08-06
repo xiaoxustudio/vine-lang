@@ -23,9 +23,9 @@ export default function toRealValue(expr: Literal | Token) {
 			return expr?.value
 				? token
 				: Array.isArray(expr)
-				? expr.map(v => toRealValue(v))
-				: typeof expr === "object"
-				? mapToObject(expr as any, toRealValue)
-				: expr;
+					? expr.map((v) => toRealValue(v))
+					: typeof expr === "object"
+						? mapToObject(expr as any, toRealValue)
+						: expr;
 	}
 }

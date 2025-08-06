@@ -9,7 +9,11 @@ export class TokenUnit {
 	}
 	vaildBaseType(token: Token) {
 		if (typeof token !== "object") return token;
-		const baseType = [TokenType.number, TokenType.string, TokenType.boolean];
+		const baseType = [
+			TokenType.number,
+			TokenType.string,
+			TokenType.boolean
+		];
 		const isBase = baseType.includes(token.type);
 		if (!isBase)
 			throw new Error(`Unknown literal type: ${JSON.stringify(token)}`);
@@ -121,7 +125,7 @@ export class TokenUnit {
 		this._token = {
 			...this._token,
 			type: TokenType.boolean,
-			value: res.toString(),
+			value: res.toString()
 		};
 		return this;
 	}

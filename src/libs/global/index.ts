@@ -5,7 +5,7 @@ import {
 	isNil,
 	isBuilInObject,
 	isFunction,
-	BaseDataTag,
+	BaseDataTag
 } from "@/utils";
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
@@ -33,7 +33,7 @@ const print = (args: Token[]) => {
 	}
 	// Vine基础数据类型
 	const results = isArray
-		? args.map(e => toLocalRealvalue(e))
+		? args.map((e) => toLocalRealvalue(e))
 		: toLocalRealvalue(args);
 
 	console.log(...(isArray ? results : [results]));

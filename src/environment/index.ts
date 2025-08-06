@@ -10,7 +10,7 @@ export const ModuleList = {
 	"vine:date": VineDate,
 	"vine:path": VinePath,
 	"vine:io": VineIO,
-	"vine:global": Global,
+	"vine:global": Global
 };
 
 export default class Environment {
@@ -45,7 +45,8 @@ export default class Environment {
 		return this.filePath;
 	}
 	setExpose(expose: Literal) {
-		if (expose.type !== "Literal") throw new Error("expose must be Literal");
+		if (expose.type !== "Literal")
+			throw new Error("expose must be Literal");
 		this.expose.add(toRealValue(expose));
 	}
 	getExpose() {
@@ -87,7 +88,11 @@ export default class Environment {
 		}
 		return this.parent.resolveVariableEnv(name);
 	}
-	declareVariable(name: Literal, value: Expr | JSRuntimeFn, is_static = false) {
+	declareVariable(
+		name: Literal,
+		value: Expr | JSRuntimeFn,
+		is_static = false
+	) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
 		const real_name = name.value.value;
 		if (this.Variable.has(real_name))
@@ -97,7 +102,8 @@ export default class Environment {
 	}
 	getVariable(name: Literal) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
-		const real_name = this.asMap.get(toRealValue(name)) || toRealValue(name);
+		const real_name =
+			this.asMap.get(toRealValue(name)) || toRealValue(name);
 		const resolveEnv = this.resolveVariableEnv(real_name);
 		return resolveEnv?.Variable.get(real_name);
 	}
@@ -108,7 +114,10 @@ export default class Environment {
 			throw new Error(`Variable ${real_name} is static`);
 		if (!this.Variable.has(real_name))
 			throw new Error(`Variable ${real_name} not declared`);
-		return this.resolveVariableEnv(real_name)?.Variable.set(real_name, value);
+		return this.resolveVariableEnv(real_name)?.Variable.set(
+			real_name,
+			value
+		);
 	}
 	deleteVariable(name: Literal) {
 		if (name.type !== "Literal") throw new Error("name must be Literal");
@@ -116,7 +125,9 @@ export default class Environment {
 		if (this.staticVariable.has(real_name))
 			throw new Error(`Variable ${real_name} is static`);
 		if (!this.Variable.has(real_name))
-			throw new Error(`Variable ${real_name} not declared and can't delete`);
+			throw new Error(
+				`Variable ${real_name} not declared and can't delete`
+			);
 		return this.Variable.delete(real_name);
 	}
 	replaceVariable(name: Literal, value: Expr) {

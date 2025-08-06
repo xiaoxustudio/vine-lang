@@ -50,12 +50,12 @@ export default {
 		return LiteralFn(path.extname(this.filePath));
 	},
 	resolve: function (this: Environment, ...args: Token[]) {
-		return LiteralFn(path.resolve(...args.map(arg => Export(arg))));
+		return LiteralFn(path.resolve(...args.map((arg) => Export(arg))));
 	},
 	join: function (this: Environment, ...args: Token[]) {
-		return LiteralFn(path.join(...args.map(arg => Export(arg))));
+		return LiteralFn(path.join(...args.map((arg) => Export(arg))));
 	},
 	isAbsolute: function (this: Environment, pathName: Token) {
 		return LiteralFn(path.isAbsolute(Export(pathName)));
-	},
+	}
 } as VinePathModule;

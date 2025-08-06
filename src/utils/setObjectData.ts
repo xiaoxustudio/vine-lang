@@ -3,6 +3,6 @@ export default function (obj: any, prop: string, value: any) {
 		value,
 		enumerable: true,
 		writable: false,
-		configurable: false,
+		configurable: false
 	});
 }

@@ -9,7 +9,7 @@ export const BaseDataTag = {
 	RANGE: Symbol("range"),
 	FN: Symbol("function"),
 	FN_TASK: Symbol("function_async"),
-	FN_LAMBDA: Symbol("function_lambda"),
+	FN_LAMBDA: Symbol("function_lambda")
 };
 
 export function isToken(expr: Expr) {
@@ -39,7 +39,8 @@ export function isFunction(fn: any) {
 
 export function isInSideModule(_: Record<string, any>) {
 	return (
-		Reflect.has(_, "__module__") && Reflect.get(_, "__module__") === ModuleTag
+		Reflect.has(_, "__module__") &&
+		Reflect.get(_, "__module__") === ModuleTag
 	);
 }
 
@@ -51,7 +52,8 @@ export function isClass(fn: Object) {
 	} catch (e) {
 		if (e instanceof TypeError) {
 			const descriptor =
-				Object.getOwnPropertyDescriptor(fn.prototype, "constructor") || {};
+				Object.getOwnPropertyDescriptor(fn.prototype, "constructor") ||
+				{};
 			if (descriptor.enumerable === false) return true;
 		}
 	}
