@@ -100,13 +100,13 @@ export default class Parser {
 		if (tokens) this.tokens = tokens;
 		const body = [];
 		if (this.tokens.length === 0) {
-			return { type: "Program", body } as ProgramStmt;
+			return createUnitNode<ProgramStmt>({ type: "Program", body });
 		}
 		while (this.tokens.length > 0) {
 			const stmt = this.parseStatement();
 			body.push(stmt);
 		}
-		return { type: "Program", body } as ProgramStmt;
+		return createUnitNode<ProgramStmt>({ type: "Program", body });
 	}
 
 	parseStatement() {

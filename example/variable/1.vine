@@ -5,4 +5,8 @@ let d = nil
 let e = NaN
 let f = [100,200,300]
 let g = [100,200,f]
-print(g)
+fn test(text):
+    print(text)
+end
+
+test(a)

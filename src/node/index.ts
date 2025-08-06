@@ -51,6 +51,8 @@ export interface Expr extends Node {}
 
 export type UnitNodeInstance<T extends unknown> = T & {
 	origin: T;
+	parent: UnitNodeInstance<BlockStmt> | null;
+	findBlock: UnitNodeInstance<BlockStmt> | null;
 };
 
 export interface Literal extends Expr {

@@ -26,7 +26,6 @@ if (args.length > 2) {
 		const path = args[3];
 		debug.setFile(path);
 
-		// 设置重置回调，允许重新运行文件
 		debug.setResetCallback(() => {
 			setTimeout(() => {
 				runFile(path, debug);
@@ -34,7 +33,7 @@ if (args.length > 2) {
 		});
 
 		debug.start();
-		// 异步运行文件，让debugger先启动
+
 		setTimeout(() => {
 			runFile(path, debug);
 		}, 100);
@@ -54,5 +53,5 @@ export {
 	toRealValue,
 	builInObjectToString,
 	LiteralFn,
-	UseEnvFn,
+	UseEnvFn
 };

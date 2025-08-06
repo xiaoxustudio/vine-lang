@@ -35,6 +35,7 @@ import {
 	WaitStmt,
 	TemplateElement,
 	TemplateLiteralExpr,
+	UnitNodeInstance
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import LiteralFn from "@/utils/LiteralFn";
@@ -103,24 +104,24 @@ export default class Interpreter {
 
 	// 尝试从任意节点提取行号
 	private extractLineFromAnyNode(node: any): number | null {
-		if (!node || typeof node !== 'object') return null;
+		if (!node || typeof node !== "object") return null;
 
 		// 检查直接的line属性
-		if (node.line && typeof node.line === 'number') {
+		if (node.line && typeof node.line === "number") {
 			return node.line;
 		}
 
 		// 检查value.line
-		if (node.value && typeof node.value === 'object' && node.value.line) {
+		if (node.value && typeof node.value === "object" && node.value.line) {
 			return node.value.line;
 		}
 
 		// 递归检查子属性
 		for (const key in node) {
-			if (key === 'parent' || key === 'env') continue; // 避免循环引用
+			if (key === "parent" || key === "env") continue; // 避免循环引用
 
 			const value = node[key];
-			if (value && typeof value === 'object') {
+			if (value && typeof value === "object") {
 				const line = this.extractLineFromAnyNode(value);
 				if (line) return line;
 			}
@@ -132,7 +133,7 @@ export default class Interpreter {
 	// 从表达式中获取行号
 	private getLineFromExpr(expr: Expr): number | null {
 		if (expr.type === "Literal") {
-			const literal = expr as Literal;
+			const literal = expr as UnitNodeInstance<Literal>;
 			return literal.value?.line || null;
 		}
 		return null;
@@ -144,7 +145,7 @@ export default class Interpreter {
 
 		// 如果有debugger，在开始时暂停
 		if (this.debuger && this.debuger.paused) {
-			await new Promise<void>(resolve => {
+			await new Promise<void>((resolve) => {
 				this.debuger.on("resume", resolve);
 				this.debuger.setResumeCallback(() => resolve());
 			});
@@ -160,7 +161,7 @@ export default class Interpreter {
 
 					// 如果在断点处暂停，等待用户命令
 					if (this.debuger.paused) {
-						await new Promise<void>(resolve => {
+						await new Promise<void>((resolve) => {
 							this.debuger.on("resume", resolve);
 							this.debuger.setResumeCallback(() => resolve());
 						});
@@ -179,17 +180,35 @@ export default class Interpreter {
 	interpretStmt(stmt: Node, env: Environment) {
 		switch (stmt.type) {
 			case "VariableDeclaration":
-				return this.interpretVariableDeclaration(stmt as VariableDecl, env);
+				return this.interpretVariableDeclaration(
+					stmt as UnitNodeInstance<VariableDecl>,
+					env
+				);
 			case "FunctionDeclaration":
-				return this.interpretFunctionDeclaration(stmt as FunctionDecl, env);
+				return this.interpretFunctionDeclaration(
+					stmt as UnitNodeInstance<FunctionDecl>,
+					env
+				);
 			case "UseDeclaration":
-				return this.interpretUseDeclaration(stmt as UseDecl, env);
+				return this.interpretUseDeclaration(
+					stmt as UnitNodeInstance<UseDecl>,
+					env
+				);
 			case "CallExpression":
-				return this.interpretCallExpression(stmt as CallExpr, env);
+				return this.interpretCallExpression(
+					stmt as UnitNodeInstance<CallExpr>,
+					env
+				);
 			case "MemberExpression":
-				return this.interpretMemberExpression(stmt as MemberExpr, env);
+				return this.interpretMemberExpression(
+					stmt as UnitNodeInstance<MemberExpr>,
+					env
+				);
 			case "AssignmentExpression":
-				return this.interpretAssignmentExpression(stmt as AssignmentExpr, env);
+				return this.interpretAssignmentExpression(
+					stmt as UnitNodeInstance<AssignmentExpr>,
+					env
+				);
 			case "EmptyLine": {
 				return;
 			}
@@ -197,36 +216,75 @@ export default class Interpreter {
 				return;
 			}
 			case "IfStatement":
-				return this.interpretIfStatement(stmt as IfStmt, env);
+				return this.interpretIfStatement(
+					stmt as UnitNodeInstance<IfStmt>,
+					env
+				);
 			case "ForStatement":
-				return this.interpretForStatement(stmt as ForStmt, env);
+				return this.interpretForStatement(
+					stmt as UnitNodeInstance<ForStmt>,
+					env
+				);
 			case "SwitchStmtement":
-				return this.interpretSwitchStatement(stmt as SwitchStmt, env);
+				return this.interpretSwitchStatement(
+					stmt as UnitNodeInstance<SwitchStmt>,
+					env
+				);
 			case "ReturnStatement":
-				return this.interpretReturnStatement(stmt as ReturnStmt, env);
+				return this.interpretReturnStatement(
+					stmt as UnitNodeInstance<ReturnStmt>,
+					env
+				);
 			case "BlockStatement":
-				return this.interpretBlockStatement(stmt as BlockStmt, env);
+				return this.interpretBlockStatement(
+					stmt as UnitNodeInstance<BlockStmt>,
+					env
+				);
 			case "ExpressionStatement":
-				return this.interpretExpressionStatement(stmt as ExpressionStmt, env);
+				return this.interpretExpressionStatement(
+					stmt as UnitNodeInstance<ExpressionStmt>,
+					env
+				);
 			case "ExposeStmtement":
-				return this.interpretExposeStatement(stmt as ExposeStmt, env);
+				return this.interpretExposeStatement(
+					stmt as UnitNodeInstance<ExposeStmt>,
+					env
+				);
 			case "TaskStatement":
-				return this.interpretTaskStatement(stmt as TaskStmt, env);
+				return this.interpretTaskStatement(
+					stmt as UnitNodeInstance<TaskStmt>,
+					env
+				);
 			case "RunStatement":
-				return this.interpretRunStatement(stmt as RunStmt, env);
+				return this.interpretRunStatement(
+					stmt as UnitNodeInstance<RunStmt>,
+					env
+				);
 			case "WaitStatement":
-				return this.interpretWaitStatement(stmt as WaitStmt, env);
+				return this.interpretWaitStatement(
+					stmt as UnitNodeInstance<WaitStmt>,
+					env
+				);
 			default:
-				return this.interpretExpression(stmt as ExpressionStmt, env);
+				return this.interpretExpression(
+					stmt as UnitNodeInstance<ExpressionStmt>,
+					env
+				);
 		}
 	}
 
-	async interpretWaitStatement(stmt: WaitStmt, env: Environment) {
+	async interpretWaitStatement(
+		stmt: UnitNodeInstance<WaitStmt>,
+		env: Environment
+	) {
 		const wait = await this.interpretRunStatement(stmt.async, env);
 		return wait;
 	}
 
-	async interpretRunStatement(stmt: RunStmt, env: Environment) {
+	async interpretRunStatement(
+		stmt: UnitNodeInstance<RunStmt>,
+		env: Environment
+	) {
 		// 异步执行
 		return await Promise.resolve().then(async () => {
 			if (stmt?.to) {
@@ -245,17 +303,24 @@ export default class Interpreter {
 		});
 	}
 
-	interpretTaskStatement(stmt: TaskStmt, env: Environment) {
-		return this.interpretFunctionDeclaration(stmt.fn, env, BaseDataTag.FN_TASK);
+	interpretTaskStatement(stmt: UnitNodeInstance<TaskStmt>, env: Environment) {
+		return this.interpretFunctionDeclaration(
+			stmt.fn,
+			env,
+			BaseDataTag.FN_TASK
+		);
 	}
 
-	interpretExposeStatement(stmt: ExposeStmt, env: Environment) {
+	interpretExposeStatement(
+		stmt: UnitNodeInstance<ExposeStmt>,
+		env: Environment
+	) {
 		const name = (() => {
 			switch (stmt.body.type) {
 				case "FunctionDeclaration":
-					return (stmt.body as FunctionDecl).id;
+					return (stmt.body as UnitNodeInstance<FunctionDecl>).id;
 				case "VariableDeclaration":
-					return (stmt.body as VariableDecl).id;
+					return (stmt.body as UnitNodeInstance<VariableDecl>).id;
 				default:
 					return null;
 			}
@@ -266,7 +331,7 @@ export default class Interpreter {
 		}
 	}
 
-	interpretUseDeclaration(stmt: UseDecl, env: Environment) {
+	interpretUseDeclaration(stmt: UnitNodeInstance<UseDecl>, env: Environment) {
 		const origin = stmt.source;
 		const pathName = path.join(
 			path.dirname(env.getFilePath()),
@@ -318,12 +383,18 @@ export default class Interpreter {
 		}
 	}
 
-	interpretReturnStatement(stmt: ReturnStmt, env: Environment) {
+	interpretReturnStatement(
+		stmt: UnitNodeInstance<ReturnStmt>,
+		env: Environment
+	) {
 		const value = this.interpretExpression(stmt.value, env);
 		return value;
 	}
 
-	async interpretSwitchStatement(stmt: SwitchStmt, env: Environment) {
+	async interpretSwitchStatement(
+		stmt: UnitNodeInstance<SwitchStmt>,
+		env: Environment
+	) {
 		const test = this.interpretExpression(stmt.test, env);
 		for (const case_ of stmt.cases) {
 			if (!case_.test) {
@@ -337,18 +408,25 @@ export default class Interpreter {
 		return null;
 	}
 
-	async interpretForStatement(stmt: ForStmt, env: Environment) {
+	async interpretForStatement(
+		stmt: UnitNodeInstance<ForStmt>,
+		env: Environment
+	) {
 		const id = stmt.init;
 		const value = stmt.value;
 		const range = await this.interpretExpression(stmt.range, env);
 		const body = stmt.body;
 		if (range.type === BaseDataTag.RANGE) {
-			const step = range?.step.value === ".." ? 1 : Number(range[2].value);
+			const step =
+				range?.step.value === ".." ? 1 : Number(range[2].value);
 			const start = toRealValue(range.start);
 			const end = toRealValue(range.end);
 			for (let i = start; i <= end; i += step) {
 				const context = new Environment(env);
-				context.declareVariable(id as Literal, LiteralFn(i));
+				context.declareVariable(
+					id as UnitNodeInstance<Literal>,
+					LiteralFn(i)
+				);
 				await this.interpretBlockStatement(body, context);
 			}
 		} else if (range instanceof Map) {
@@ -358,14 +436,21 @@ export default class Interpreter {
 			for (const key in iterable) {
 				const val = iterable[key];
 				const context = new Environment(env);
-				context.declareVariable(id as Literal, LiteralFn(key));
-				if (value) context.declareVariable(value as Literal, val);
+				context.declareVariable(
+					id as UnitNodeInstance<Literal>,
+					LiteralFn(key)
+				);
+				if (value)
+					context.declareVariable(
+						value as UnitNodeInstance<Literal>,
+						val
+					);
 				await this.interpretBlockStatement(body, context);
 			}
 		}
 	}
 
-	interpretIfStatement(stmt: IfStmt, env: Environment) {
+	interpretIfStatement(stmt: UnitNodeInstance<IfStmt>, env: Environment) {
 		const condition = this.interpretExpression(stmt.test, env) as Token;
 		const realValue = toRealValue(condition);
 		if (typeof realValue === "boolean") {
@@ -380,7 +465,10 @@ export default class Interpreter {
 			.throw();
 	}
 
-	async interpretAssignmentExpression(stmt: AssignmentExpr, env: Environment) {
+	async interpretAssignmentExpression(
+		stmt: UnitNodeInstance<AssignmentExpr>,
+		env: Environment
+	) {
 		const value = await this.interpretExpression(stmt.right, env);
 		try {
 			env.setVariable(stmt.left, value);
@@ -396,7 +484,10 @@ export default class Interpreter {
 				.throw();
 		}
 	}
-	async interpretBlockStatement(stmt: BlockStmt, env: Environment) {
+	async interpretBlockStatement(
+		stmt: UnitNodeInstance<BlockStmt>,
+		env: Environment
+	) {
 		let returnVal: any;
 		for (const s of stmt.body) {
 			// 通知debugger当前执行的行号和环境
@@ -407,7 +498,7 @@ export default class Interpreter {
 
 				// 如果在断点处暂停，等待用户命令
 				if (this.debuger.paused) {
-					await new Promise<void>(resolve => {
+					await new Promise<void>((resolve) => {
 						this.debuger.on("resume", resolve);
 						this.debuger.setResumeCallback(() => resolve());
 					});
@@ -423,7 +514,7 @@ export default class Interpreter {
 		return returnVal;
 	}
 	interpretFunctionDeclaration(
-		stmt: FunctionDecl,
+		stmt: UnitNodeInstance<FunctionDecl>,
 		env: Environment,
 		type = BaseDataTag.FN
 	) {
@@ -437,7 +528,10 @@ export default class Interpreter {
 				} else {
 					for (const i in args) {
 						if (args_out[i])
-							context.declareVariable(args_out[i] as any, args[i]);
+							context.declareVariable(
+								args_out[i] as any,
+								args[i]
+							);
 					}
 				}
 			}
@@ -447,30 +541,43 @@ export default class Interpreter {
 		env.declareVariable(stmt.id, fn);
 	}
 
-	async interpretCallExpression(stmt: CallExpr, env: Environment) {
+	async interpretCallExpression(
+		stmt: UnitNodeInstance<CallExpr>,
+		env: Environment
+	) {
 		const callee = await this.interpretExpression(stmt.callee, env);
 		const args = await Promise.all(
-			stmt.arguments.map(async arg => this.interpretExpression(arg, env))
+			stmt.arguments.map(async (arg) =>
+				this.interpretExpression(arg, env)
+			)
 		);
 		let res: any;
 		try {
-			res = typeof callee === "function" ? callee.apply(env, args) : callee;
+			res =
+				typeof callee === "function" ? callee.apply(env, args) : callee;
 		} catch (e) {
 			this.errStackManager
 				.addError(
-					new ErrorStack(`CallExpression error: ${e}`, env, stmt.callee.value)
+					new ErrorStack(
+						`CallExpression error: ${e}`,
+						env,
+						stmt.callee.value
+					)
 				)
 				.throw();
 		}
 		return res;
 	}
-	async interpretVariableDeclaration(stmt: VariableDecl, env: Environment) {
+	async interpretVariableDeclaration(
+		stmt: UnitNodeInstance<VariableDecl>,
+		env: Environment
+	) {
 		const value = await this.interpretExpression(stmt.value, env);
 		env.declareVariable(stmt.id, value, stmt.is_const);
 	}
 	async interpretMemberExpression(e: MemberExpr, env: Environment) {
 		const object = await this.interpretExpression(e.object, env);
-		const prop_val = toRealValue(e.property as Literal);
+		const prop_val = toRealValue(e.property as UnitNodeInstance<Literal>);
 		if (object instanceof Map) {
 			const fromEntries = Object.fromEntries(object);
 			if (!fromEntries["[object Object]"]) {
@@ -497,11 +604,11 @@ export default class Interpreter {
 	async interpretExpression(expression: Expr, env: Environment) {
 		switch (expression.type) {
 			case "CallExpression": {
-				const e = expression as CallExpr;
+				const e = expression as UnitNodeInstance<CallExpr>;
 				return this.interpretCallExpression(e, env);
 			}
 			case "Literal": {
-				const e = expression as Literal;
+				const e = expression as UnitNodeInstance<Literal>;
 				try {
 					if (e.value.type === TokenType.identifier) {
 						const val = env.getVariable(e) as any; // 可能拿到的是Literal
@@ -512,7 +619,9 @@ export default class Interpreter {
 					}
 				} catch (err) {
 					this.errStackManager
-						.addError(new ErrorStack(`Literal error: ${err}`, env, e))
+						.addError(
+							new ErrorStack(`Literal error: ${err}`, env, e)
+						)
 						.throw();
 				}
 				return e.value;
@@ -542,7 +651,10 @@ export default class Interpreter {
 				for (const target of e.items) {
 					const key = target.key;
 					key.value.type = TokenType.index;
-					obj.set(key, await this.interpretExpression(target.value, env));
+					obj.set(
+						key,
+						await this.interpretExpression(target.value, env)
+					);
 				}
 				setObjectData(obj, "type", BaseDataTag.ARRAY); // 设置类型
 				return obj;
@@ -558,14 +670,17 @@ export default class Interpreter {
 					} catch {
 						key = LiteralFn(target.key.value.value);
 					}
-					obj.set(key, await this.interpretExpression(target.value, env));
+					obj.set(
+						key,
+						await this.interpretExpression(target.value, env)
+					);
 				}
 				setObjectData(obj, "type", BaseDataTag.OBJECT); // 设置类型
 				return obj;
 			}
 			case "AssignmentExpression": {
 				return this.interpretAssignmentExpression(
-					expression as AssignmentExpr,
+					expression as UnitNodeInstance<AssignmentExpr>,
 					env
 				);
 			}
@@ -573,7 +688,9 @@ export default class Interpreter {
 				const e = expression as CompareExpr;
 				const left = this.interpretExpression(e.left, env);
 				const right = this.interpretExpression(e.right, env);
-				return new TokenUnit(left).logicOperate(e.operator, right).getToken();
+				return new TokenUnit(left)
+					.logicOperate(e.operator, right)
+					.getToken();
 			}
 			case "TernayExpression": {
 				const e = expression as TernaryExpr;
@@ -594,14 +711,18 @@ export default class Interpreter {
 						.throw();
 				}
 				this.errStackManager
-					.addError(new ErrorStack(`Condition must be a boolean`, env))
+					.addError(
+						new ErrorStack(`Condition must be a boolean`, env)
+					)
 					.throw();
 			}
 			case "EqualExpression": {
 				const e = expression as EqualExpr;
 				const left = this.interpretExpression(e.left, env);
 				const right = this.interpretExpression(e.right, env);
-				return new TokenUnit(left).logicOperate(e.operator, right).getToken();
+				return new TokenUnit(left)
+					.logicOperate(e.operator, right)
+					.getToken();
 			}
 			case "RangeExpression": {
 				const e = expression as RangeExpr;
@@ -617,9 +738,11 @@ export default class Interpreter {
 			case "TemplateLiteralExpression": {
 				const e = expression as TemplateLiteralExpr;
 				const values = await Promise.all(
-					e.quotes.map(async q => await this.interpretExpression(q, env))
+					e.quotes.map(
+						async (q) => await this.interpretExpression(q, env)
+					)
 				);
-				return values.map(v => v.value).join("");
+				return values.map((v) => v.value).join("");
 			}
 			case "LambdaFunctionDecl": {
 				const e = expression as LambdaFunctionDecl;
@@ -628,7 +751,10 @@ export default class Interpreter {
 					for (const i in args) {
 						context.declareVariable(e.arguments[i] as any, args[i]);
 					}
-					const v = await this.interpretBlockStatement(e.body, context);
+					const v = await this.interpretBlockStatement(
+						e.body,
+						context
+					);
 					return v;
 				};
 				setObjectData(fn, "type", BaseDataTag.FN_LAMBDA);
@@ -646,7 +772,10 @@ export default class Interpreter {
 				if (e.local.type !== "Literal") {
 					this.errStackManager
 						.addError(
-							new ErrorStack("UseDefaultSpecifier local must be a literal", env)
+							new ErrorStack(
+								"UseDefaultSpecifier local must be a literal",
+								env
+							)
 						)
 						.throw();
 				}
@@ -663,15 +792,20 @@ export default class Interpreter {
 					return res;
 				} catch (err) {
 					this.errStackManager
-						.addError(new ErrorStack(`ToExpression error: ${err}`, env))
+						.addError(
+							new ErrorStack(`ToExpression error: ${err}`, env)
+						)
 						.throw();
 				}
 			}
 			case "RunStatement": {
-				return this.interpretRunStatement(expression as RunStmt, env);
+				return this.interpretRunStatement(
+					expression as UnitNodeInstance<RunStmt>,
+					env
+				);
 			}
 			case "WaitStatement": {
-				const e = expression as WaitStmt;
+				const e = expression as UnitNodeInstance<WaitStmt>;
 				const res = await this.interpretWaitStatement(e, env);
 				return res;
 			}
