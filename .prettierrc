@@ -1,0 +1,19 @@
+{
+  "bracketSpacing": true,
+
+  "endOfLine": "lf",
+
+  "semi": true,
+
+  "tabWidth": 4,
+
+  "trailingComma": "none",
+
+  "singleQuote": false,
+
+  "jsxSingleQuote": false,
+
+  "useTabs": true,
+
+  "vueIndentScriptAndStyle": true
+}

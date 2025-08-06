@@ -12,7 +12,7 @@
 		"ast",
 		"language"
 	],
-	"packageManager": "pnpm@10.13.1",
+	"packageManager": "pnpm@10.14.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/xiaoxustudio/vine-lang.git"
@@ -48,6 +48,7 @@
 		"@types/ws": "^8.18.1",
 		"@yao-pkg/pkg": "^6.5.1",
 		"cross-env": "^7.0.3",
+		"prettier": "^3.6.2",
 		"tsc-alias": "^1.8.16",
 		"tsup": "^8.5.0",
 		"typescript": "^5.8.3",

@@ -34,9 +34,11 @@ import {
 	VariableDecl,
 	WaitStmt,
 	EmptyLineStmt,
+	UnitNodeInstance
 } from "@/node";
 import { Token, TokenType } from "@/keywords";
 import { Literal } from "../node/index";
+import createUnitNode from "@/unit";
 import LiteralFn from "@/utils/LiteralFn";
 import { ErrorStack, ErrorStackManager } from "@/error";
 
@@ -152,46 +154,50 @@ export default class Parser {
 
 	parseWait() {
 		const id = this.eat();
-		return {
+		return createUnitNode<WaitStmt>({
 			type: "WaitStatement",
 			async: this.parseRun(),
-			id,
-		} as WaitStmt;
+			id
+		});
 	}
 
-	parseTo() {
+	parseTo(): UnitNodeInstance<ToExpr> {
 		this.match(TokenType.to);
 		const args = this.parseArgs();
 		const body = this.parseBlock(true);
-		return { type: "ToExpression", arguments: args, body } as ToExpr;
+		return createUnitNode<ToExpr>({
+			type: "ToExpression",
+			arguments: args,
+			body
+		});
 	}
 
-	parseRun() {
+	parseRun(): UnitNodeInstance<RunStmt> {
 		const id = this.eat();
 		const callee = this.parseCall();
-		let to: ToExpr[] = [];
+		let to: UnitNodeInstance<ToExpr>[] = [];
 		if (this.at().type === TokenType.to) {
 			while (this.at().type === TokenType.to) {
 				to.push(this.parseTo());
 			}
 			this.match(TokenType.end);
 		}
-		return {
+		return createUnitNode<RunStmt>({
 			type: "RunStatement",
 			callee,
 			to,
-			id,
-		} as RunStmt;
+			id
+		});
 	}
 
 	parseTask() {
 		const id = this.eat();
 		const fn = this.parseFunction();
-		return {
+		return createUnitNode<TaskStmt>({
 			type: "TaskStatement",
 			fn,
-			id,
-		} as TaskStmt;
+			id
+		});
 	}
 
 	parseExpose() {
@@ -199,12 +205,12 @@ export default class Parser {
 		return {
 			type: "ExposeStmtement",
 			body: this.parseStatement(),
-			id,
+			id
 		} as ExposeStmt;
 	}
 
-	parseAs() {
-		const specifiers = [];
+	parseAs(): UnitNodeInstance<UseSpecifier>[] {
+		const specifiers: UnitNodeInstance<UseSpecifier>[] = [];
 		this.match(TokenType.paren, "(");
 		while (this.at().type !== TokenType.paren) {
 			const specifier = this.parseIdentifier();
@@ -213,11 +219,13 @@ export default class Parser {
 				this.match(TokenType.as);
 				remote = this.parseIdentifier();
 			}
-			specifiers.push({
-				type: "UseSpecifier",
-				local: specifier,
-				remote,
-			} as UseSpecifier);
+			specifiers.push(
+				createUnitNode<UseSpecifier>({
+					type: "UseSpecifier",
+					local: specifier,
+					remote
+				})
+			);
 			if (this.at().type === TokenType.comma) this.eat();
 		}
 		this.match(TokenType.paren, ")");
@@ -228,7 +236,7 @@ export default class Parser {
 		this.match(TokenType.as);
 		return {
 			type: "UseDefaultSpecifier",
-			local: this.parseIdentifier(),
+			local: this.parseIdentifier()
 		} as UseDefaultSpecifier;
 	}
 
@@ -249,7 +257,7 @@ export default class Parser {
 			type: "UseDeclaration",
 			source,
 			specifiers,
-			id,
+			id
 		} as UseDecl;
 	}
 
@@ -259,7 +267,7 @@ export default class Parser {
 		return {
 			type: "ReturnStatement",
 			value,
-			id,
+			id
 		} as ReturnStmt;
 	}
 
@@ -277,7 +285,7 @@ export default class Parser {
 			type: "SwitchStmtement",
 			test,
 			cases,
-			id,
+			id
 		} as SwitchStmt;
 	}
 
@@ -292,33 +300,36 @@ export default class Parser {
 			}
 			this.match(TokenType.colon, ":"); // eat the ':' token
 			let bodyStmt;
-			const body: Expr[] = [];
+			const body: UnitNodeInstance<Expr>[] = [];
 			while (
 				this.tokens.length > 0 &&
 				![
 					TokenType.break,
 					TokenType.case,
 					TokenType.default,
-					TokenType.end,
+					TokenType.end
 				].includes(this.at().type)
 			) {
 				const stmt = this.parseStatement();
 				body.push(stmt);
 			}
-			bodyStmt = { body, type: "BlockStatement" } as BlockStmt;
+			bodyStmt = createUnitNode<BlockStmt>({
+				body,
+				type: "BlockStatement"
+			});
 			if (body[body.length - 1].type !== "ReturnStatement")
 				this.match(TokenType.break);
 			return isDefault
-				? ({
+				? createUnitNode<DefaultCaseBlockStmt>({
 						test,
 						body: bodyStmt,
-						type: "DefaultCaseBlockStatement",
-				  } as DefaultCaseBlockStmt)
-				: ({
+						type: "DefaultCaseBlockStatement"
+					})
+				: createUnitNode<CaseBlockStmt>({
 						test,
 						body: bodyStmt,
-						type: "CaseBlockStatement",
-				  } as CaseBlockStmt);
+						type: "CaseBlockStatement"
+					});
 		}
 		this.errStackManager
 			.addError(new ErrorStack(`Unexpected case token: ${token.type}`))
@@ -330,28 +341,28 @@ export default class Parser {
 		const id = this.parseIdentifier();
 		const args = this.parseArgs();
 		const body = this.parseBlock();
-		return {
+		return createUnitNode<FunctionDecl>({
 			id,
 			arguments: args,
 			body,
 			type: "FunctionDeclaration",
-			preId,
-		} as FunctionDecl;
+			preId
+		});
 	}
 
-	parseIdentifier(): Expr {
+	parseIdentifier(): UnitNodeInstance<Literal> {
 		const token = this.match(TokenType.identifier);
-		return { value: token, type: "Literal" } as Literal;
+		return createUnitNode<Literal>({ value: token, type: "Literal" });
 	}
 
-	parseString() {
+	parseString(): UnitNodeInstance<Literal> {
 		const token = this.at();
 		if (token.type !== TokenType.string) {
 			this.errStackManager
 				.addError(new ErrorStack(`Unexpected token: ${token.type}`))
 				.throw();
 		}
-		return { value: this.eat(), type: "Literal" } as Literal;
+		return createUnitNode<Literal>({ value: this.eat(), type: "Literal" });
 	}
 
 	parseVariable() {
@@ -370,7 +381,7 @@ export default class Parser {
 				value,
 				type: "VariableDeclaration",
 				is_const,
-				preId,
+				preId
 			} as VariableDecl;
 		} else {
 			this.errStackManager
@@ -384,20 +395,23 @@ export default class Parser {
 		const condition = this.parseExpression();
 		const consequent = this.parseBlock(true);
 		const token = this.at();
-		let alternate = { body: [], type: "BlockStatement" } as BlockStmt;
+		let alternate = createUnitNode<BlockStmt>({
+			body: [],
+			type: "BlockStatement"
+		});
 		if (token.type === TokenType.else) {
 			this.match(TokenType.else);
 			alternate = this.parseBlock();
 		} else {
 			this.match(TokenType.end);
 		}
-		return {
+		return createUnitNode<IfStmt>({
 			type: "IfStatement",
 			test: condition,
 			consequent,
 			alternate,
-			id,
-		} as IfStmt;
+			id
+		});
 	}
 
 	parseFor() {
@@ -410,17 +424,17 @@ export default class Parser {
 			value = this.parseIdentifier();
 		}
 		this.match(TokenType.in); // eat the 'for' token
-		const range = this.parseExpression() as RangeExpr;
+		const range = this.parseExpression() as UnitNodeInstance<RangeExpr>;
 		const body = this.parseBlock();
-		return {
+		return createUnitNode<ForStmt>({
 			id,
 			init: identifier,
 			value,
 			range,
 			body,
-			update: LiteralFn(1),
-			type: "ForStatement",
-		} as ForStmt;
+			update: createUnitNode(LiteralFn(1)),
+			type: "ForStatement"
+		});
 	}
 
 	parseBlock(noEnd: boolean = false) {
@@ -434,14 +448,18 @@ export default class Parser {
 			body.push(stmt);
 		}
 		if (!noEnd) this.match(TokenType.end); // eat the 'end' token
-		return { body, type: "BlockStatement", id } as BlockStmt;
+		return createUnitNode<BlockStmt>({
+			body,
+			type: "BlockStatement",
+			id
+		});
 	}
 
-	parseTemplateString(token: Token) {
-		const tmpExpr = {
+	parseTemplateString(token: Token): UnitNodeInstance<TemplateLiteralExpr> {
+		const tmpExpr = createUnitNode<TemplateLiteralExpr>({
 			type: "TemplateLiteralExpression",
-			quotes: [],
-		} as TemplateLiteralExpr;
+			quotes: []
+		});
 		const text = token.value as string;
 		const reg = /\{\{([^\}]+)\}\}/g;
 		let lastIndex = 0; // 记录上一次匹配结束的位置
@@ -451,33 +469,35 @@ export default class Parser {
 			// 处理匹配前的普通文本
 			if (match.index > lastIndex) {
 				const literalText = text.substring(lastIndex, match.index);
-				tmpExpr.quotes.push({
-					type: "TemplateElement",
-					value: {
-						type: "Literal",
-						value: {
-							...token,
-							column: match.index,
-							type: TokenType.string,
-							value: literalText,
-						},
-					},
-				} as TemplateElement);
+				tmpExpr.quotes.push(
+					createUnitNode<TemplateElement>({
+						type: "TemplateElement",
+						value: createUnitNode<Literal>({
+							type: "Literal",
+							value: {
+								...token,
+								column: match.index,
+								type: TokenType.string,
+								value: literalText
+							}
+						})
+					})
+				);
 			}
 
 			// 处理匹配到的插值表达式
-			const tmpElem = {
+			const tmpElem = createUnitNode<TemplateElement>({
 				type: "TemplateElement",
-				value: {
+				value: createUnitNode<Literal>({
 					value: {
 						...token,
 						column: match.index,
 						type: TokenType.identifier,
-						value: match[1],
+						value: match[1]
 					},
-					type: "Literal",
-				} as Literal,
-			} as TemplateElement;
+					type: "Literal"
+				})
+			});
 			tmpExpr.quotes.push(tmpElem);
 
 			// 更新最后匹配位置（当前匹配结束位置）
@@ -487,23 +507,25 @@ export default class Parser {
 		// 处理末尾的普通文本
 		if (lastIndex < text.length) {
 			const literalText = text.substring(lastIndex);
-			tmpExpr.quotes.push({
-				type: "TemplateElement",
-				value: {
-					type: "Literal",
-					value: {
-						...token,
-						column: lastIndex,
-						type: TokenType.string,
-						value: literalText,
-					},
-				},
-			} as TemplateElement);
+			tmpExpr.quotes.push(
+				createUnitNode<TemplateElement>({
+					type: "TemplateElement",
+					value: createUnitNode<Literal>({
+						type: "Literal",
+						value: {
+							...token,
+							column: lastIndex,
+							type: TokenType.string,
+							value: literalText
+						}
+					})
+				})
+			);
 		}
 		return tmpExpr;
 	}
 
-	parseExpression(): Expr {
+	parseExpression(): UnitNodeInstance<Expr> {
 		return this.parseTernay();
 	}
 
@@ -514,85 +536,101 @@ export default class Parser {
 			const consequent = this.parseExpression();
 			this.match(TokenType.colon);
 			const alternate = this.parseExpression();
-			return {
+			return createUnitNode<TernaryExpr>({
 				type: "TernayExpression",
 				condition: left,
 				consequent,
-				alternate,
-			} as TernaryExpr;
+				alternate
+			});
 		}
 		return left;
 	}
 
-	parseObjectLiteral() {
+	parseObjectLiteral():
+		| UnitNodeInstance<ObjectExpr>
+		| UnitNodeInstance<ArrayExpr> {
 		if (this.at().type !== TokenType.curly) {
 			return this.parseArrayLiteral();
 		}
 		this.match(TokenType.curly, "{");
-		const properties: Property[] = [];
+		const properties: UnitNodeInstance<Property>[] = [];
 		while (this.at().type !== TokenType.curly && this.at().value !== "}") {
 			const key = this.parseIdentifier();
 			// {key}
 			if (this.at().type == TokenType.comma) {
 				// {key ,}
 				this.eat();
-				properties.push({
-					key,
-					value: key,
-					type: "Property",
-				} as Property);
+				properties.push(
+					createUnitNode<Property>({
+						key,
+						value: key,
+						type: "Property"
+					})
+				);
 				continue;
-			} else if (this.at().type == TokenType.curly && this.at(1).value == "}") {
+			} else if (
+				this.at().type == TokenType.curly &&
+				this.at(1).value == "}"
+			) {
 				// {key}
-				properties.push({
-					key,
-					value: key,
-					type: "Property",
-				} as Property);
+				properties.push(
+					createUnitNode<Property>({
+						key,
+						value: key,
+						type: "Property"
+					})
+				);
 				continue;
 			}
 			//{key : val}
 			this.match(TokenType.colon);
 			const value = this.parseExpression();
-			properties.push({ key, value, type: "Property" } as Property);
+			properties.push(
+				createUnitNode<Property>({ key, value, type: "Property" })
+			);
 			if (this.at().type == TokenType.comma) this.match(TokenType.comma);
 		}
 		this.match(TokenType.curly, "}");
-		return { properties, type: "ObjectExpression" } as ObjectExpr;
+		return createUnitNode<ObjectExpr>({
+			properties,
+			type: "ObjectExpression"
+		});
 	}
 
-	parseArrayLiteral(): ArrayExpr {
+	parseArrayLiteral(): UnitNodeInstance<ArrayExpr> {
 		if (this.at().type !== TokenType.bracket) {
 			return this.parseEqualExpr();
 		}
 		this.match(TokenType.bracket, "[");
-		const elements: Expr[] = [];
+		const elements: UnitNodeInstance<Property>[] = [];
 		// 处理空数组情况
 		if (this.at().value === "]") {
 			this.eat();
-			return {
+			return createUnitNode<ArrayExpr>({
 				items: elements,
-				type: "ArrayExpression",
-			} as ArrayExpr;
+				type: "ArrayExpression"
+			});
 		}
 		let index = 0;
 		while (this.tokens.length > 0 && this.at().value !== "]") {
 			const expr = this.parseExpression();
-			elements.push({
-				type: "Property",
-				key: LiteralFn(index),
-				value: expr,
-			} as Property);
+			elements.push(
+				createUnitNode<Property>({
+					type: "Property",
+					key: createUnitNode(LiteralFn(index)),
+					value: expr
+				})
+			);
 			if (this.at().type === TokenType.comma) {
 				this.eat();
 			}
 			index++;
 		}
 		this.match(TokenType.bracket, "]");
-		return {
+		return createUnitNode<ArrayExpr>({
 			items: elements,
-			type: "ArrayExpression",
-		} as ArrayExpr;
+			type: "ArrayExpression"
+		});
 	}
 
 	parseComparisonExpr() {
@@ -605,15 +643,21 @@ export default class Parser {
 			op.includes(token.value)
 		) {
 			const operator = this.eat();
-			const target = {
+			const target = createUnitNode<CompareExpr>({
 				left,
 				operator,
 				right: null,
-				type: "CompareExpression",
-			} as CompareExpr;
-			if (this.at().type === TokenType.operator && this.at().value === "=") {
+				type: "CompareExpression"
+			});
+			if (
+				this.at().type === TokenType.operator &&
+				this.at().value === "="
+			) {
 				this.eat();
-				target.operator = { ...operator, value: operator.value + "=" };
+				target.operator = {
+					...operator,
+					value: operator.value + "="
+				} as Token;
 			}
 			target.right = this.parseComparisonExpr();
 			return target;
@@ -631,30 +675,33 @@ export default class Parser {
 			op.includes(token.value)
 		) {
 			const operator = this.eat();
-			if (this.at().type === TokenType.operator && this.at().value === "=") {
+			if (
+				this.at().type === TokenType.operator &&
+				this.at().value === "="
+			) {
 				this.eat();
-				return {
+				return createUnitNode<EqualExpr>({
 					left,
 					operator: { ...operator, value: operator.value + "=" },
 					right: this.parseEqualExpr(),
-					type: "EqualExpression",
-				} as EqualExpr;
+					type: "EqualExpression"
+				});
 			}
-			return {
+			return createUnitNode<AssignmentExpr>({
 				left,
 				operator,
 				right: this.parseEqualExpr(),
-				type: "AssignmentExpression",
-			} as AssignmentExpr;
+				type: "AssignmentExpression"
+			});
 		}
 		return left;
 	}
 
-	parseArgs() {
+	parseArgs(): UnitNodeInstance<Expr>[] {
 		if (this.at().type === TokenType.colon) {
 			return [];
 		}
-		const args: Expr[] = [];
+		const args: UnitNodeInstance<Expr>[] = [];
 		this.match(TokenType.paren, "(");
 		if (this.at().value === ")") {
 			this.eat();
@@ -676,11 +723,11 @@ export default class Parser {
 		const token = this.at();
 		if (token && token.type === TokenType.paren && token.value === "(") {
 			const args = this.parseArgs();
-			return {
+			return createUnitNode<CallExpr>({
 				callee: left,
 				arguments: args,
-				type: "CallExpression",
-			} as CallExpr;
+				type: "CallExpression"
+			});
 		}
 		return left;
 	}
@@ -695,12 +742,12 @@ export default class Parser {
 			op.includes(token.value)
 		) {
 			const operator = this.eat();
-			return {
+			return createUnitNode<BinaryExpr>({
 				left,
 				operator,
 				right: this.parseBinaryExpr(),
-				type: "BinaryExpression",
-			} as BinaryExpr;
+				type: "BinaryExpression"
+			});
 		}
 		return left;
 	}
@@ -714,37 +761,39 @@ export default class Parser {
 			const operator = this.eat();
 			operator.value = "..";
 			this.eat();
-			return {
+			return createUnitNode<RangeExpr>({
 				start: object,
 				step: operator,
 				end: this.parseMemberExpr(),
-				type: "RangeExpression",
-			} as RangeExpr;
+				type: "RangeExpression"
+			});
 		}
 		while (this.at()?.value === "[" || this.at()?.type === TokenType.dot) {
 			if (this.at().type === TokenType.dot) {
 				this.eat();
 				const property = this.parseIdentifier();
-				object = {
+				object = createUnitNode<MemberExpr>({
 					object,
 					property,
 					computed: false,
-					type: "MemberExpression",
-				} as MemberExpr;
+					type: "MemberExpression"
+				});
 			} else if (this.at().type === TokenType.bracket) {
 				this.eat();
 				const expr = this.parseExpression();
 				this.match(TokenType.bracket, "]");
-				object = {
+				object = createUnitNode<MemberExpr>({
 					object,
 					property: expr,
 					computed: true,
-					type: "MemberExpression",
-				} as MemberExpr;
+					type: "MemberExpression"
+				});
 			} else {
 				this.errStackManager
 					.addError(
-						new ErrorStack(`Unexpected token: ${JSON.stringify(this.at())}`)
+						new ErrorStack(
+							`Unexpected token: ${JSON.stringify(this.at())}`
+						)
 					)
 					.throw();
 			}
@@ -752,7 +801,7 @@ export default class Parser {
 		return object;
 	}
 
-	parsePrimary(): Expr {
+	parsePrimary(): UnitNodeInstance<Expr> {
 		const token = this.at();
 		switch (token.type) {
 			case TokenType.number:
@@ -764,10 +813,10 @@ export default class Parser {
 				this.eat();
 				if (/\{\{([^\}]+)\}\}/g.test(token.value))
 					return this.parseTemplateString(token);
-				return {
+				return createUnitNode<Literal>({
 					value: token,
-					type: "Literal",
-				} as Literal;
+					type: "Literal"
+				});
 			case TokenType.paren:
 				this.eat();
 				const expr = this.parseExpression();
@@ -782,11 +831,11 @@ export default class Parser {
 				this.match(TokenType.fn);
 				const args = this.parseArgs();
 				const body = this.parseBlock();
-				return {
+				return createUnitNode({
 					arguments: args,
 					body,
-					type: "LambdaFunctionDecl",
-				} as LambdaFunctionDecl;
+					type: "LambdaFunctionDecl"
+				} as LambdaFunctionDecl);
 			case TokenType.run:
 				return this.parseRun();
 			case TokenType.wait:
@@ -800,7 +849,9 @@ export default class Parser {
 			default:
 				this.errStackManager
 					.addError(
-						new ErrorStack(`Unexpected token: ${JSON.stringify(token)}`)
+						new ErrorStack(
+							`Unexpected token: ${JSON.stringify(token)}`
+						)
 					)
 					.throw();
 		}
