@@ -96,7 +96,7 @@ export default class Parser {
 			.throw();
 	}
 
-	parse(tokens?: Token[]): ProgramStmt {
+	parse(tokens?: Token[]): UnitNodeInstance<ProgramStmt> {
 		if (tokens) this.tokens = tokens;
 		const body = [];
 		if (this.tokens.length === 0) {
