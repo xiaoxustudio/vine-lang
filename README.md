@@ -53,6 +53,8 @@ console.log(result3); // 2
 //  ...more , you can see the example in vine respository
 ```
 
+Language support for VSCode: [vine-for-vscode](https://github.com/xiaoxustudio/vine-for-vscode)
+
 # Develop
 
 The project uses `pnpm` as the package manager.

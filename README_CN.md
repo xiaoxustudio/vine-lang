@@ -53,6 +53,8 @@ console.log(result3); // 2
 //  ...more , you can see the example in vine respository
 ```
 
+VSCode插件语言支持: [vine-for-vscode](https://github.com/xiaoxustudio/vine-for-vscode)
+
 # 项目
 
 项目使用 pnpm 作为包管理器
