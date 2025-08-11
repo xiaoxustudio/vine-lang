@@ -20,13 +20,12 @@ jobs:
               with:
                   node-version: lts/*
                   registry-url: https://registry.npmjs.org/
-            - uses: pnpm/action-setup@v4
+            - uses: pnpm/action-setup@v4.1.0
             - run: pnpm install
             - run: npx changelogithub
               continue-on-error: true
               env:
                   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-            - run: pnpm run build
             - run: pnpm run exebuild
             - name: release
               uses: softprops/action-gh-release@v1
@@ -37,6 +36,7 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
             - run: npm install -g npm
+            - run: pnpm run build
             - run: npm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
