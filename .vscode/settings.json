@@ -1,3 +1,4 @@
 {
-    "typescript.experimental.useTsgo": false
+    "typescript.experimental.useTsgo": false,
+    "Codegeex.SidebarUI.LanguagePreference": "中文"
 }

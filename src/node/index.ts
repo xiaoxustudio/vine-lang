@@ -197,7 +197,7 @@ export interface ToExpr extends Expr {
 
 export interface TemplateLiteralExpr extends Expr {
 	type: "TemplateLiteralExpression";
-	quotes: UnitNodeInstance<TemplateElement | Literal>[];
+	quotes: UnitNodeInstance<TemplateElement | Expr>[];
 }
 
 /* ================================== Stmt ================================== */

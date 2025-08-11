@@ -41,6 +41,7 @@ import { Literal } from "../node/index";
 import createUnitNode from "@/unit";
 import LiteralFn from "@/utils/LiteralFn";
 import { ErrorStack, ErrorStackManager } from "@/error";
+import TemplateStringParser from "./template";
 
 export default class Parser {
 	private errStackManager = new ErrorStackManager();
@@ -454,73 +455,16 @@ export default class Parser {
 			id
 		});
 	}
-
 	parseTemplateString(token: Token): UnitNodeInstance<TemplateLiteralExpr> {
 		const tmpExpr = createUnitNode<TemplateLiteralExpr>({
 			type: "TemplateLiteralExpression",
 			quotes: []
 		});
-		const text = token.value as string;
-		const reg = /\{\{([^\}]+)\}\}/g;
-		let lastIndex = 0; // 记录上一次匹配结束的位置
-		let match: RegExpExecArray;
-
-		while ((match = reg.exec(text)) !== null) {
-			// 处理匹配前的普通文本
-			if (match.index > lastIndex) {
-				const literalText = text.substring(lastIndex, match.index);
-				tmpExpr.quotes.push(
-					createUnitNode<TemplateElement>({
-						type: "TemplateElement",
-						value: createUnitNode<Literal>({
-							type: "Literal",
-							value: {
-								...token,
-								column: match.index,
-								type: TokenType.string,
-								value: literalText
-							}
-						})
-					})
-				);
-			}
-
-			// 处理匹配到的插值表达式
-			const tmpElem = createUnitNode<TemplateElement>({
-				type: "TemplateElement",
-				value: createUnitNode<Literal>({
-					value: {
-						...token,
-						column: match.index,
-						type: TokenType.identifier,
-						value: match[1]
-					},
-					type: "Literal"
-				})
-			});
-			tmpExpr.quotes.push(tmpElem);
-
-			// 更新最后匹配位置（当前匹配结束位置）
-			lastIndex = match.index + match[0].length;
-		}
-
-		// 处理末尾的普通文本
-		if (lastIndex < text.length) {
-			const literalText = text.substring(lastIndex);
-			tmpExpr.quotes.push(
-				createUnitNode<TemplateElement>({
-					type: "TemplateElement",
-					value: createUnitNode<Literal>({
-						type: "Literal",
-						value: {
-							...token,
-							column: lastIndex,
-							type: TokenType.string,
-							value: literalText
-						}
-					})
-				})
-			);
+		const quotes = new TemplateStringParser(token);
+		try {
+			tmpExpr.quotes = quotes.parse();
+		} catch (e) {
+			this.errStackManager.addError(new ErrorStack(e.message)).throw();
 		}
 		return tmpExpr;
 	}

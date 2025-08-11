@@ -5,7 +5,6 @@ import { BlockStmt, NodeType, Node, UnitNodeInstance } from "@/node";
 class UnitNode<T extends Node> {
 	readonly __origin: T;
 	readonly type: NodeType;
-	readonly loc?: Location;
 
 	get parent(): UnitNodeInstance<BlockStmt> | null {
 		return null;
