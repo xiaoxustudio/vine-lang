@@ -74,7 +74,7 @@ pnpm run dev
 Build exe
 
 ```bash
-pnpm run build
+pnpm run exebuild
 ```
 
 ## Repl

@@ -76,7 +76,7 @@ pnpm run dev
 构建 exe
 
 ```bash
-pnpm run build
+pnpm run exebuild
 ```
 
 ## 交互
