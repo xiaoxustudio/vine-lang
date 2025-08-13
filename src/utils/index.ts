@@ -11,6 +11,51 @@ export const BaseDataTag = {
 	FN_TASK: Symbol("function_async"),
 	FN_LAMBDA: Symbol("function_lambda")
 };
+const MapNodeType = [
+	"Program",
+	"Literal",
+	"Property",
+	"CommentStatement",
+	"EmptyLine",
+	/* Declaration */
+	"LambdaFunctionDecl",
+	"FunctionDeclaration",
+	"VariableDeclaration",
+	"UseDeclaration",
+	"UseSpecifier",
+	"UseDefaultSpecifier",
+	"TemplateElement",
+	/* expr */
+	"BinaryExpression",
+	"ArrayExpression",
+	"ObjectExpression",
+	"MemberExpression",
+	"CallExpression",
+	"AssignmentExpression",
+	"CompareExpression",
+	"EqualExpression",
+	"TernayExpression",
+	"RangeExpression",
+	"IterableExpression",
+	"ToExpression",
+	"TemplateLiteralExpression",
+	/* stmt */
+	"RunStatement",
+	"WaitStatement",
+	"TaskStatement",
+	"BlockStatement",
+	"ReturnStatement",
+	"ExpressionStatement",
+	"IfStatement",
+	"ForStatement",
+	"SwitchStmtement",
+	"CaseBlockStatement",
+	"DefaultCaseBlockStatement",
+	"ExposeStmtement"
+];
+export function isNode(stmt: any) {
+	return MapNodeType.includes(stmt?.type);
+}
 
 export function isToken(expr: Expr) {
 	return Object.keys(TokenType).includes(expr?.type);

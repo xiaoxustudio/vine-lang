@@ -37,6 +37,12 @@ class UnitNode<T extends Node> {
 		}
 
 		this.__origin = obj;
+		Object.defineProperty(obj, "__origin", {
+			value: true,
+			enumerable: true,
+			configurable: true,
+			writable: false
+		});
 	}
 
 	/**

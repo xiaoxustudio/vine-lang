@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 const isProduction = process.env.NODE_ENV === "production";
 
 export default defineConfig({
-	entry: ["src/**/*.ts"],
+	entry: ["src/**/*.ts", "!src/test/**/*"],
 	outDir: "dist",
 	format: isProduction ? ["cjs", "esm"] : ["cjs"],
 	splitting: false,

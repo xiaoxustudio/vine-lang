@@ -668,6 +668,7 @@ export default class Parser {
 		if (token && token.type === TokenType.paren && token.value === "(") {
 			const args = this.parseArgs();
 			return createUnitNode<CallExpr>({
+				id: token,
 				callee: left,
 				arguments: args,
 				type: "CallExpression"
