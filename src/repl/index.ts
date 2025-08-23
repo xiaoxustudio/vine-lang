@@ -1,5 +1,5 @@
 /* repl program */
-import * as repl from "repl";
+import * as repl from "node:repl";
 import { tokenlize } from "@/token";
 import Parser from "@/parser";
 import Environment from "@/environment";

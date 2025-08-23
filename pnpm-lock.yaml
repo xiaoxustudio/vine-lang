@@ -22,7 +22,7 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       '@yao-pkg/pkg':
-        specifier: ^6.5.1
+        specifier: ^6.6.0
         version: 6.6.0
       cross-env:
         specifier: ^7.0.3

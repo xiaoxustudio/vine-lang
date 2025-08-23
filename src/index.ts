@@ -14,29 +14,31 @@ import Debugger from "./debug";
 
 const args = process.argv;
 
-if (args.length > 2) {
-	const type = args[2];
-	if (type === "repl") {
-		replProgram();
-	} else if (type === "ipt") {
-		const path = args[3];
-		runFile(path);
-	} else if (type === "debug") {
-		const debug = new Debugger();
-		const path = args[3];
-		debug.setFile(path);
+if (args[1] === __filename) {
+	if (args.length > 2) {
+		const type = args[2];
+		if (type === "repl") {
+			replProgram();
+		} else if (type === "ipt") {
+			const path = args[3];
+			runFile(path);
+		} else if (type === "debug") {
+			const debug = new Debugger();
+			const path = args[3];
+			debug.setFile(path);
 
-		debug.setResetCallback(() => {
+			debug.setResetCallback(() => {
+				setTimeout(() => {
+					runFile(path, debug);
+				}, 100);
+			});
+
+			debug.start();
+
 			setTimeout(() => {
 				runFile(path, debug);
 			}, 100);
-		});
-
-		debug.start();
-
-		setTimeout(() => {
-			runFile(path, debug);
-		}, 100);
+		}
 	}
 }
 
