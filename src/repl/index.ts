@@ -12,14 +12,18 @@ export function replProgram() {
 	console.log("\x1B[32m", "Welcome to Vine REPL!", "\x1b[0m");
 	const replServer = repl.start({
 		prompt: "Vine> ",
-		eval: (cmd, context, filename, callback) => {
+		eval: async (cmd, context, filename, callback) => {
 			try {
 				const tk = tokenlize(cmd);
 				const parse = new Parser();
 				const ipt = new Interpreter(env);
 				const ast = parse.parse(tk);
-				let res = ipt.interpret(ast) as any;
-				callback(null, res);
+				let ipt_result = ipt.interpret(ast) as any;
+				const result =
+					ipt_result instanceof Promise
+						? await ipt_result
+						: ipt_result;
+				callback(null, result);
 			} catch (err) {
 				callback(err, null);
 			}

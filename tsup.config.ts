@@ -16,6 +16,7 @@ export default defineConfig({
 	define: {
 		"process.env.NODE_ENV": JSON.stringify(
 			isProduction ? "production" : "development"
-		)
+		),
+		"process.env.NODE_EXE": isExE ? "true" : "false"
 	}
 });

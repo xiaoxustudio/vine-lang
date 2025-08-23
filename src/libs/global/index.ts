@@ -10,6 +10,8 @@ import {
 import builInObjectToString from "@/utils/builInObjectToString";
 import toRealValue from "@/utils/toRealValue";
 
+const isExE = process.env.NODE_EXE === "true";
+
 /**
  * @description: print log
  * @param {Token} args
@@ -34,9 +36,9 @@ const print = (args: Token[]) => {
 	// Vine基础数据类型
 	const results = isArray
 		? args.map((e) => toLocalRealvalue(e))
-		: toLocalRealvalue(args);
+		: [toLocalRealvalue(args)];
 
-	console.log(...(isArray ? results : [results]));
+	console.log(...results);
 };
 
 export { print };

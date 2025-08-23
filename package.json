@@ -25,7 +25,7 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
-		"watch": "tsup -w",
+		"watch": "tsup --watch",
 		"prebuild": "cross-env NODE_ENV=development tsup && tsc-alias",
 		"dev": "pnpm prebuild && node dist/index.js",
 		"build": "cross-env NODE_ENV=production tsup && tsc-alias",

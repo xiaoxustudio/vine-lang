@@ -2,10 +2,11 @@ import { TokenType } from "@/keywords";
 import { Literal, Expr } from "@/node";
 import toRealValue from "./toRealValue";
 
-export default function mapToObject(
+export default async function mapToObject(
 	obj: Map<Literal, Expr>,
 	fn: (v: any) => any
 ) {
+	if (obj instanceof Promise) obj = await obj;
 	if (!(obj instanceof Map))
 		throw new Error("obj is not Map , current type is : " + typeof obj);
 	const isArray =
